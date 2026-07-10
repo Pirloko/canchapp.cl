@@ -4,6 +4,10 @@
 # dependencies
 node_modules/
 
+# build output
+dist/
+Canchapp.cl/dist/
+
 # Expo
 .expo/
 dist/

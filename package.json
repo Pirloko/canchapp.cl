@@ -1,0 +1,6 @@
+{
+  "private": true,
+  "scripts": {
+    "vercel-build": "cd Canchapp.cl && npm install && npx expo export -p web"
+  }
+}
