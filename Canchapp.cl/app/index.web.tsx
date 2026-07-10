@@ -10,7 +10,7 @@ function LandingWeb() {
   useEffect(() => {
     if (Platform.OS !== 'web' || typeof window === 'undefined') return
     if (!window.location.pathname.includes('/landing/')) {
-      window.location.replace('/landing/index.html')
+      window.location.replace('/landing/')
     }
   }, [])
 
