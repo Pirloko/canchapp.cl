@@ -1,5 +1,7 @@
 {
+  "buildCommand": "npm run vercel-build",
   "outputDirectory": "Canchapp.cl/dist",
+  "installCommand": "npm install --prefix Canchapp.cl",
   "framework": null,
   "cleanUrls": true
 }
