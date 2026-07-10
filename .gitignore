@@ -1,0 +1,29 @@
+# macOS
+.DS_Store
+
+# dependencies
+node_modules/
+
+# Expo
+.expo/
+dist/
+web-build/
+
+# Next.js
+.next/
+
+# env files (secrets)
+.env
+.env*.local
+
+# Supabase CLI temp
+**/.temp/
+
+# IDE
+.vscode/
+.claude/
+
+# debug
+npm-debug.*
+yarn-debug.*
+yarn-error.*
