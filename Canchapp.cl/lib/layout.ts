@@ -1,4 +1,5 @@
-import { Platform, useWindowDimensions } from 'react-native'
+import { useWindowDimensions } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 const COMPACT_MAX_WIDTH = 480
 
@@ -8,16 +9,14 @@ export function useIsCompactLayout(): boolean {
 }
 
 export function useTabBarInsets(): { height: number; paddingBottom: number } {
+  const insets = useSafeAreaInsets()
   const { width } = useWindowDimensions()
   const compact = width < COMPACT_MAX_WIDTH
+  const baseHeight = compact ? 52 : 56
+  const paddingBottom = Math.max(insets.bottom, compact ? 10 : 8)
 
-  if (Platform.OS === 'ios') {
-    return { height: 88, paddingBottom: 24 }
+  return {
+    height: baseHeight + paddingBottom,
+    paddingBottom,
   }
-
-  if (Platform.OS === 'web' && compact) {
-    return { height: 72, paddingBottom: 20 }
-  }
-
-  return { height: 64, paddingBottom: 8 }
 }

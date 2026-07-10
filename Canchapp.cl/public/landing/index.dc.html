@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script crossorigin src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="./image-slot.js"></script>
+<style>
+  html { scroll-behavior: smooth; }
+  body { margin: 0; background: #FFFFFF; color: #0F1A14; font-family: "DM Sans", system-ui, sans-serif; }
+  a { color: #0B6E4F; text-decoration: none; }
+  a:hover { color: #064A35; }
+  input::placeholder { color: #6B7F74; }
+  @keyframes flotarLento { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-12px) rotate(2deg); } }
+  @keyframes flotarMockup { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+    html { scroll-behavior: auto; }
+  }
+  @media (max-width: 768px) {
+    .nav-links { display: none !important; }
+    .logo-pendiente { display: none !important; }
+    header > div { padding: 10px 16px !important; gap: 12px !important; }
+    header nav { gap: 10px !important; }
+    header nav button { font-size: 13px !important; padding: 10px 14px !important; white-space: nowrap; }
+  }
+</style>
+</helmet>
+
+<!-- HEADER FIJO -->
+<header style="position: sticky; top: 0; z-index: 50; background: rgba(255,255,255,0.94); backdrop-filter: blur(10px); border-bottom: 1px solid #EEF4F0">
+  <div style="max-width: 1160px; margin: 0 auto; padding: 12px 24px; display: flex; align-items: center; justify-content: space-between; gap: 20px">
+    <div style="display: flex; align-items: center; gap: 10px">
+      <span style="width: 30px; height: 30px; border-radius: 999px; border: 2.5px solid #064A35; display: flex; align-items: center; justify-content: center; flex-shrink: 0">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="1.5" y="3" width="13" height="10" rx="1.5" stroke="#064A35" stroke-width="1.6"></rect><line x1="8" y1="3" x2="8" y2="13" stroke="#064A35" stroke-width="1.6"></line><circle cx="8" cy="8" r="1.8" stroke="#064A35" stroke-width="1.3"></circle></svg>
+      </span>
+      <span style="font-family: Sora, sans-serif; font-weight: 800; font-size: 22px; letter-spacing: -0.6px; color: #0F1A14">Canchapp</span>
+      <span class="logo-pendiente" style="font-family: ui-monospace, Menlo, monospace; font-size: 10px; color: #6B7F74; border: 1px dashed #DDE8E2; border-radius: 4px; padding: 2px 6px">logo pendiente</span>
+    </div>
+    <nav style="display: flex; align-items: center; gap: 26px">
+      <div style="display: flex; gap: 24px" class="nav-links">
+        <a href="#como-funciona" style="font-size: 15px; font-weight: 500; color: #3D5248">Cómo funciona</a>
+        <a href="#beneficios" style="font-size: 15px; font-weight: 500; color: #3D5248">Beneficios</a>
+        <a href="#faq" style="font-size: 15px; font-weight: 500; color: #3D5248">FAQ</a>
+        <a href="/login" style="font-size: 15px; font-weight: 600; color: #064A35">Iniciar sesión</a>
+      </div>
+      <button onClick="{{ irADemo }}" style="display: flex; align-items: center; gap: 8px; background: #064A35; color: #FFFFFF; border: none; border-radius: 999px; padding: 11px 20px; font-family: Sora, sans-serif; font-weight: 600; font-size: 14px; cursor: pointer; box-shadow: 0 3px 10px rgba(6,74,53,0.25); transition: transform 0.2s ease, background 0.2s ease" style-hover="background: #0B6E4F; transform: scale(1.02)">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="1.5" y="2.5" width="13" height="12" rx="2" stroke="#FFFFFF" stroke-width="1.5"></rect><line x1="1.5" y1="6" x2="14.5" y2="6" stroke="#FFFFFF" stroke-width="1.5"></line><line x1="5" y1="1" x2="5" y2="4" stroke="#FFFFFF" stroke-width="1.5"></line><line x1="11" y1="1" x2="11" y2="4" stroke="#FFFFFF" stroke-width="1.5"></line></svg>
+        {{ ctaTexto }}
+      </button>
+    </nav>
+  </div>
+</header>
+
+<!-- HERO -->
+<section data-screen-label="Hero" style="background: linear-gradient(160deg, #F4F8F6 55%, #E6F4EE 100%); position: relative; overflow: hidden">
+  <div style="position: absolute; inset: 0; pointer-events: none" aria-hidden="true">
+    <div style="position: absolute; top: -140px; right: -100px; width: 620px; height: 620px; border: 2px solid rgba(11,110,79,0.09); border-radius: 999px"></div>
+    <div style="position: absolute; bottom: -180px; left: -140px; width: 420px; height: 420px; border: 2px solid rgba(11,110,79,0.07); border-radius: 999px"></div>
+    <div data-parallax="0.06" style="position: absolute; top: 96px; left: 44%; width: 18px; height: 18px; border-radius: 999px; background: #22C55E; opacity: 0.6; animation: flotarLento 5s ease-in-out infinite"></div>
+  </div>
+  <div style="max-width: 1160px; margin: 0 auto; padding: clamp(40px, 7vw, 84px) 24px clamp(48px, 7vw, 88px); display: flex; flex-wrap: wrap; gap: clamp(32px, 5vw, 64px); align-items: center; position: relative">
+
+    <!-- Copy -->
+    <div style="flex: 1 1 440px; min-width: 300px; display: flex; flex-direction: column; gap: 22px; align-items: flex-start">
+      <span style="background: #E6F4EE; color: #0B6E4F; font-family: Sora, sans-serif; font-weight: 600; font-size: 13px; padding: 7px 14px; border-radius: 999px; border: 1px solid rgba(11,110,79,0.15)">Para dueños de centros de pádel y fútbol</span>
+      <h1 style="margin: 0; font-family: Sora, sans-serif; font-weight: 800; font-size: clamp(36px, 4.6vw, 58px); line-height: 1.06; letter-spacing: -2px; color: #0F1A14; text-wrap: balance">Todas las reservas de tu centro, <span style="color: #0B6E4F">en un solo lugar</span></h1>
+      <p style="margin: 0; font-size: clamp(16px, 1.8vw, 19px); line-height: 1.65; color: #3D5248; max-width: 46ch; text-wrap: pretty">Deja el cuaderno, el Excel y los mensajes cruzados de WhatsApp. Canchapp ordena tus canchas, horarios y reservas — desde el celular, la tablet o el PC.</p>
+      <button onClick="{{ irADemo }}" style="display: flex; align-items: center; gap: 10px; background: #064A35; color: #FFFFFF; border: none; border-radius: 14px; padding: 17px 30px; font-family: Sora, sans-serif; font-weight: 700; font-size: 17px; cursor: pointer; box-shadow: 0 8px 24px rgba(6,74,53,0.30); transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease" style-hover="background: #0B6E4F; transform: scale(1.02); box-shadow: 0 12px 30px rgba(6,74,53,0.35)">
+        <svg width="17" height="17" viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="1.5" y="2.5" width="13" height="12" rx="2" stroke="#FFFFFF" stroke-width="1.5"></rect><line x1="1.5" y1="6" x2="14.5" y2="6" stroke="#FFFFFF" stroke-width="1.5"></line><line x1="5" y1="1" x2="5" y2="4" stroke="#FFFFFF" stroke-width="1.5"></line><line x1="11" y1="1" x2="11" y2="4" stroke="#FFFFFF" stroke-width="1.5"></line></svg>
+        {{ ctaTexto }}
+      </button>
+      <div style="display: flex; flex-wrap: wrap; gap: 20px; align-items: center">
+        <sc-for list="{{ bulletsConfianza }}" as="bullet" hint-placeholder-count="3">
+          <span style="display: flex; align-items: center; gap: 7px; font-size: 14px; color: #3D5248">
+            <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="6.5" stroke="#0B6E4F" stroke-width="1.5"></circle><path d="M5.5 8.2 7.2 10 10.5 6.4" stroke="#0B6E4F" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+            {{ bullet.texto }}
+          </span>
+        </sc-for>
+      </div>
+    </div>
+
+    <!-- Visual compuesto: foto + panel + móvil -->
+    <div style="flex: 1 1 460px; min-width: 300px; position: relative; min-height: 460px">
+      <!-- Foto de canchas -->
+      <div style="position: absolute; top: 0; right: 0; width: 62%; height: 88%; border-radius: 20px; overflow: hidden; box-shadow: 0 16px 48px rgba(6,74,53,0.20)">
+        <image-slot id="hero-foto-canchas" shape="rounded" radius="20" placeholder="Foto real: canchas de pádel o fútbolito"></image-slot>
+        <div style="position: absolute; inset: 0; background: linear-gradient(200deg, rgba(6,74,53,0.0) 40%, rgba(6,74,53,0.28) 100%); pointer-events: none"></div>
+      </div>
+
+      <!-- Mockup panel de reservas -->
+      <div style="position: absolute; top: 12%; left: 0; width: 66%; background: #FFFFFF; border-radius: 16px; box-shadow: 0 20px 50px rgba(15,26,20,0.16); padding: 16px; animation: flotarMockup 6s ease-in-out infinite" aria-label="Mockup: panel de reservas Canchapp">
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px">
+          <span style="width: 20px; height: 20px; border-radius: 999px; border: 2px solid #064A35; display: flex; align-items: center; justify-content: center">
+            <svg width="10" height="10" viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="1.5" y="3" width="13" height="10" rx="1.5" stroke="#064A35" stroke-width="2"></rect><line x1="8" y1="3" x2="8" y2="13" stroke="#064A35" stroke-width="2"></line></svg>
+          </span>
+          <span style="font-family: Sora, sans-serif; font-weight: 700; font-size: 12px; color: #0F1A14">Panel de reservas</span>
+        </div>
+        <div style="display: grid; grid-template-columns: 34px repeat(4, 1fr); gap: 4px; font-size: 9px; color: #6B7F74">
+          <span></span>
+          <span style="text-align: center; font-weight: 600">Lun 12</span>
+          <span style="text-align: center; font-weight: 600">Mar 13</span>
+          <span style="text-align: center; font-weight: 600">Mié 14</span>
+          <span style="text-align: center; font-weight: 600">Jue 15</span>
+          <sc-for list="{{ filasCalendario }}" as="fila" hint-placeholder-count="6">
+            <span style="font-size: 8px; padding-top: 4px">{{ fila.hora }}</span>
+            <span style="min-height: 26px; border-radius: 5px; background: {{ fila.c1bg }}; border: 1px solid {{ fila.c1borde }}; display: flex; align-items: center; justify-content: center; font-size: 7.5px; font-weight: 600; color: {{ fila.c1color }}; text-align: center; line-height: 1.2; padding: 2px">{{ fila.c1 }}</span>
+            <span style="min-height: 26px; border-radius: 5px; background: {{ fila.c2bg }}; border: 1px solid {{ fila.c2borde }}; display: flex; align-items: center; justify-content: center; font-size: 7.5px; font-weight: 600; color: {{ fila.c2color }}; text-align: center; line-height: 1.2; padding: 2px">{{ fila.c2 }}</span>
+            <span style="min-height: 26px; border-radius: 5px; background: {{ fila.c3bg }}; border: 1px solid {{ fila.c3borde }}; display: flex; align-items: center; justify-content: center; font-size: 7.5px; font-weight: 600; color: {{ fila.c3color }}; text-align: center; line-height: 1.2; padding: 2px">{{ fila.c3 }}</span>
+            <span style="min-height: 26px; border-radius: 5px; background: {{ fila.c4bg }}; border: 1px solid {{ fila.c4borde }}; display: flex; align-items: center; justify-content: center; font-size: 7.5px; font-weight: 600; color: {{ fila.c4color }}; text-align: center; line-height: 1.2; padding: 2px">{{ fila.c4 }}</span>
+          </sc-for>
+        </div>
+      </div>
+
+      <!-- Mockup móvil -->
+      <div style="position: absolute; bottom: 0; right: 6%; width: 34%; max-width: 175px; background: #0F1A14; border-radius: 26px; padding: 8px; box-shadow: 0 24px 56px rgba(15,26,20,0.30); animation: flotarMockup 6s ease-in-out infinite; animation-delay: 0.8s" aria-label="Mockup: app móvil con reserva confirmada">
+        <div style="background: #FFFFFF; border-radius: 20px; padding: 18px 12px 12px; display: flex; flex-direction: column; align-items: center; gap: 8px">
+          <span style="width: 44px; height: 44px; border-radius: 999px; background: #E6F4EE; display: flex; align-items: center; justify-content: center">
+            <svg width="22" height="22" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="7" fill="#0B6E4F"></circle><path d="M5 8.3 7 10.3 11 5.9" stroke="#FFFFFF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          </span>
+          <span style="font-family: Sora, sans-serif; font-weight: 700; font-size: 12px; color: #0B6E4F">Reserva confirmada</span>
+          <div style="text-align: center; display: flex; flex-direction: column; gap: 2px">
+            <span style="font-size: 10px; font-weight: 600; color: #0F1A14">Cancha 2</span>
+            <span style="font-size: 9px; color: #6B7F74">Sábado 17 de mayo</span>
+            <span style="font-size: 9px; color: #6B7F74">10:00 – 11:00</span>
+          </div>
+          <span style="width: 100%; text-align: center; font-size: 9px; font-weight: 600; color: #0F1A14; border: 1px solid #DDE8E2; border-radius: 8px; padding: 6px 0">Ver mis reservas</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROBLEMA -->
+<section data-screen-label="Problema" style="background: #F9FCFA">
+  <div data-reveal style="max-width: 1000px; margin: 0 auto; padding: clamp(52px, 7vw, 92px) 24px; display: flex; flex-direction: column; gap: 32px">
+    <h2 style="margin: 0; font-family: Sora, sans-serif; font-weight: 700; font-size: clamp(27px, 3.4vw, 38px); letter-spacing: -1px; color: #0F1A14; text-align: center; text-wrap: balance">¿Te suena familiar?</h2>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 18px">
+      <sc-for list="{{ dolores }}" as="dolor" hint-placeholder-count="3">
+        <div style="background: #FFFFFF; border: 1px solid #EEF4F0; border-radius: 16px; padding: 24px; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 4px 14px rgba(15,26,20,0.04); transition: transform 0.25s ease, box-shadow 0.25s ease" style-hover="transform: translateY(-4px) scale(1.02); box-shadow: 0 14px 32px rgba(15,26,20,0.10)">
+          <span style="width: 42px; height: 42px; border-radius: 12px; background: #FDECEC; display: flex; align-items: center; justify-content: center; color: #DC2626; font-family: Sora, sans-serif; font-weight: 800; font-size: 18px">{{ dolor.icono }}</span>
+          <p style="margin: 0; font-size: 15.5px; line-height: 1.6; color: #3D5248; text-wrap: pretty">{{ dolor.texto }}</p>
+        </div>
+      </sc-for>
+    </div>
+    <div style="background: #E6F4EE; border: 1px solid rgba(11,110,79,0.15); border-radius: 16px; padding: 22px 26px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap">
+      <svg width="30" height="30" viewBox="0 0 24 24" fill="none" aria-hidden="true" style="flex-shrink: 0"><path d="M7 4h10v3a5 5 0 0 1-10 0V4Z" stroke="#0B6E4F" stroke-width="1.8"></path><path d="M7 5H4.5a0 0 0 0 0 0 0c0 2.5 1 4 2.8 4.4M17 5h2.5c0 2.5-1 4-2.8 4.4" stroke="#0B6E4F" stroke-width="1.8"></path><path d="M12 12v3m-3 5h6m-3-5v5" stroke="#0B6E4F" stroke-width="1.8" stroke-linecap="round"></path></svg>
+      <p style="margin: 0; flex: 1; min-width: 240px; font-size: clamp(15px, 1.8vw, 17px); line-height: 1.6; color: #0F1A14; text-wrap: pretty">Cada hora que pasas coordinando reservas es una hora que no dedicas a tu centro. <strong style="color: #0B6E4F; font-family: Sora, sans-serif">Canchapp lo hace por ti.</strong></p>
+    </div>
+  </div>
+</section>
+
+<!-- CÓMO FUNCIONA -->
+<section id="como-funciona" data-screen-label="Como funciona" style="background: #FFFFFF; position: relative; overflow: hidden">
+  <div data-parallax="0.05" style="position: absolute; left: -70px; top: 55%; width: 170px; height: 170px; border-radius: 999px; background: radial-gradient(circle at 35% 30%, #FFFFFF 0%, #E8EDEA 45%, #C9D4CE 100%); opacity: 0.55; pointer-events: none" aria-hidden="true"></div>
+  <div data-reveal style="max-width: 1160px; margin: 0 auto; padding: clamp(52px, 7vw, 92px) 24px; display: flex; flex-direction: column; gap: 40px; position: relative">
+    <div style="display: flex; flex-direction: column; gap: 12px; align-items: center; text-align: center">
+      <h2 style="margin: 0; font-family: Sora, sans-serif; font-weight: 700; font-size: clamp(27px, 3.4vw, 38px); letter-spacing: -1px; color: #0F1A14">Cómo funciona</h2>
+      <span style="width: 56px; height: 4px; border-radius: 999px; background: linear-gradient(90deg, #0B6E4F, #22C55E)"></span>
+      <p style="margin: 0; font-size: 16px; line-height: 1.6; color: #6B7F74">Tres pasos y tu centro queda funcionando. En la demo lo configuramos contigo.</p>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 22px">
+      <sc-for list="{{ pasos }}" as="paso" hint-placeholder-count="3">
+        <div style="background: #F9FCFA; border: 1px solid #EEF4F0; border-radius: 18px; padding: 26px; display: flex; flex-direction: column; gap: 14px; transition: transform 0.25s ease, box-shadow 0.25s ease" style-hover="transform: translateY(-5px) scale(1.02); box-shadow: 0 16px 36px rgba(11,110,79,0.12)">
+          <div style="display: flex; align-items: center; justify-content: space-between">
+            <span style="font-family: Sora, sans-serif; font-weight: 800; font-size: 14px; color: #FFFFFF; background: #0B6E4F; width: 32px; height: 32px; border-radius: 999px; display: flex; align-items: center; justify-content: center">{{ paso.numero }}</span>
+            <span style="font-size: 30px; line-height: 1" aria-hidden="true">{{ paso.iconoElemento }}</span>
+          </div>
+          <h3 style="margin: 0; font-family: Sora, sans-serif; font-weight: 700; font-size: 19px; letter-spacing: -0.4px; color: #0F1A14">{{ paso.titulo }}</h3>
+          <p style="margin: 0; font-size: 15px; line-height: 1.6; color: #3D5248; text-wrap: pretty">{{ paso.detalle }}</p>
+          <div style="width: 100%; aspect-ratio: 16 / 10; border-radius: 12px; overflow: hidden; border: 1.5px dashed #C9D4CE; margin-top: 4px">
+            <image-slot id="{{ paso.slotId }}" shape="rounded" radius="12" placeholder="{{ paso.slotHint }}"></image-slot>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+</section>
+
+<!-- BENEFICIOS -->
+<section id="beneficios" data-screen-label="Beneficios" style="background: #F4F8F6; position: relative; overflow: hidden">
+  <div data-parallax="0.07" style="position: absolute; right: -50px; top: 12%; width: 120px; height: 120px; border-radius: 999px; background: radial-gradient(circle at 35% 30%, #E8FA6E 0%, #C6E93A 55%, #9DC41C 100%); opacity: 0.5; pointer-events: none" aria-hidden="true"></div>
+  <div data-reveal style="max-width: 1000px; margin: 0 auto; padding: clamp(52px, 7vw, 92px) 24px; display: flex; flex-direction: column; gap: 40px; position: relative">
+    <div style="display: flex; flex-direction: column; gap: 12px; align-items: center; text-align: center">
+      <h2 style="margin: 0; font-family: Sora, sans-serif; font-weight: 700; font-size: clamp(27px, 3.4vw, 38px); letter-spacing: -1px; color: #0F1A14">Por qué Canchapp</h2>
+      <span style="width: 56px; height: 4px; border-radius: 999px; background: linear-gradient(90deg, #0B6E4F, #22C55E)"></span>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px">
+      <sc-for list="{{ beneficios }}" as="ben" hint-placeholder-count="4">
+        <div style="background: #FFFFFF; border: 1px solid #EEF4F0; border-radius: 18px; padding: 28px 24px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 12px; box-shadow: 0 4px 14px rgba(15,26,20,0.04); transition: transform 0.25s ease, box-shadow 0.25s ease" style-hover="transform: translateY(-4px) scale(1.02); box-shadow: 0 16px 36px rgba(11,110,79,0.12)">
+          <span style="width: 52px; height: 52px; border-radius: 999px; background: #E6F4EE; display: flex; align-items: center; justify-content: center; font-size: 24px" aria-hidden="true">{{ ben.iconoElemento }}</span>
+          <h3 style="margin: 0; font-family: Sora, sans-serif; font-weight: 700; font-size: 17px; letter-spacing: -0.3px; color: #0B6E4F; text-wrap: balance">{{ ben.titulo }}</h3>
+          <p style="margin: 0; font-size: 14.5px; line-height: 1.6; color: #3D5248; text-wrap: pretty">{{ ben.detalle }}</p>
+        </div>
+      </sc-for>
+    </div>
+    <div style="display: flex; justify-content: center">
+      <button onClick="{{ irADemo }}" style="display: flex; align-items: center; gap: 10px; background: #064A35; color: #FFFFFF; border: none; border-radius: 14px; padding: 15px 28px; font-family: Sora, sans-serif; font-weight: 700; font-size: 16px; cursor: pointer; box-shadow: 0 8px 24px rgba(6,74,53,0.28); transition: transform 0.2s ease, background 0.2s ease" style-hover="background: #0B6E4F; transform: scale(1.02)">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="1.5" y="2.5" width="13" height="12" rx="2" stroke="#FFFFFF" stroke-width="1.5"></rect><line x1="1.5" y1="6" x2="14.5" y2="6" stroke="#FFFFFF" stroke-width="1.5"></line><line x1="5" y1="1" x2="5" y2="4" stroke="#FFFFFF" stroke-width="1.5"></line><line x1="11" y1="1" x2="11" y2="4" stroke="#FFFFFF" stroke-width="1.5"></line></svg>
+        {{ ctaTexto }}
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- PRUEBA SOCIAL -->
+<sc-if value="{{ mostrarPruebaSocial }}" hint-placeholder-val="{{ true }}">
+  <section data-screen-label="Prueba social" style="background: #FFFFFF">
+    <div data-reveal style="max-width: 940px; margin: 0 auto; padding: clamp(44px, 6vw, 76px) 24px; display: flex; flex-direction: column; gap: 24px">
+      <h2 style="margin: 0; font-family: Sora, sans-serif; font-weight: 700; font-size: clamp(24px, 3vw, 32px); letter-spacing: -0.8px; color: #0F1A14; text-align: center">Centros que ya usan Canchapp</h2>
+      <div style="border: 2px dashed #DDE8E2; border-radius: 18px; padding: 36px 24px; display: flex; flex-direction: column; align-items: center; gap: 18px; background: repeating-linear-gradient(-45deg, #FFFFFF, #FFFFFF 12px, #F9FCFA 12px, #F9FCFA 24px)">
+        <span style="font-family: ui-monospace, Menlo, monospace; font-size: 13px; color: #6B7F74; text-align: center">[ hueco: 1–2 testimonios con nombre + centro, y logos de clientes ]</span>
+        <div style="display: flex; flex-wrap: wrap; gap: 14px; justify-content: center">
+          <sc-for list="{{ logosPlaceholder }}" as="lp" hint-placeholder-count="4">
+            <span style="display: flex; align-items: center; gap: 8px; border: 1px dashed #C9D4CE; border-radius: 10px; padding: 10px 18px; font-family: ui-monospace, Menlo, monospace; font-size: 11px; color: #9AAFA3; letter-spacing: 1px">TU CENTRO</span>
+          </sc-for>
+        </div>
+        <span style="font-family: ui-monospace, Menlo, monospace; font-size: 11px; color: #9AAFA3; text-align: center">cuando los tengas, esta sección se activa — mientras tanto puedes ocultarla desde Tweaks</span>
+      </div>
+    </div>
+  </section>
+</sc-if>
+
+<!-- FAQ -->
+<section id="faq" data-screen-label="Preguntas" style="background: #F9FCFA">
+  <div data-reveal style="max-width: 760px; margin: 0 auto; padding: clamp(52px, 7vw, 92px) 24px; display: flex; flex-direction: column; gap: 30px">
+    <div style="display: flex; flex-direction: column; gap: 12px; align-items: center; text-align: center">
+      <h2 style="margin: 0; font-family: Sora, sans-serif; font-weight: 700; font-size: clamp(27px, 3.4vw, 38px); letter-spacing: -1px; color: #0F1A14">Preguntas frecuentes</h2>
+      <span style="width: 56px; height: 4px; border-radius: 999px; background: linear-gradient(90deg, #0B6E4F, #22C55E)"></span>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 12px">
+      <sc-for list="{{ faqs }}" as="faq" hint-placeholder-count="5">
+        <div style="border: 1px solid #DDE8E2; border-radius: 14px; overflow: hidden; background: #FFFFFF">
+          <button onClick="{{ faq.alternar }}" style="width: 100%; background: transparent; border: none; padding: 18px 20px; display: flex; justify-content: space-between; align-items: center; gap: 12px; cursor: pointer; text-align: left" style-hover="background: #F4F8F6">
+            <span style="font-family: Sora, sans-serif; font-weight: 600; font-size: 16px; color: #0F1A14">{{ faq.pregunta }}</span>
+            <span style="font-family: Sora, sans-serif; font-weight: 700; font-size: 18px; color: #0B6E4F; flex-shrink: 0; transition: transform 0.3s ease; transform: {{ faq.rotacion }}">+</span>
+          </button>
+          <div style="display: grid; grid-template-rows: {{ faq.filas }}; transition: grid-template-rows 0.35s ease">
+            <div style="overflow: hidden">
+              <p style="margin: 0; padding: 0 20px 18px; font-size: 15px; line-height: 1.65; color: #3D5248; text-wrap: pretty">{{ faq.respuesta }}</p>
+            </div>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+</section>
+
+<!-- CTA FINAL -->
+<section id="demo" data-screen-label="Cierre demo" style="background: linear-gradient(160deg, #064A35 0%, #04331F 100%); position: relative; overflow: hidden">
+  <div style="position: absolute; inset: 0; pointer-events: none" aria-hidden="true">
+    <div style="position: absolute; top: -160px; left: -160px; width: 480px; height: 480px; border: 2px solid rgba(255,255,255,0.06); border-radius: 999px"></div>
+    <div style="position: absolute; bottom: -140px; right: -120px; width: 380px; height: 380px; border: 2px solid rgba(255,255,255,0.06); border-radius: 999px"></div>
+    <div style="position: absolute; top: 0; bottom: 0; left: 50%; width: 2px; background: rgba(255,255,255,0.05)"></div>
+  </div>
+  <div data-reveal style="max-width: 720px; margin: 0 auto; padding: clamp(56px, 8vw, 100px) 24px; display: flex; flex-direction: column; gap: 24px; align-items: center; text-align: center; position: relative">
+    <h2 style="margin: 0; font-family: Sora, sans-serif; font-weight: 800; font-size: clamp(28px, 4vw, 44px); letter-spacing: -1.2px; color: #FFFFFF; text-wrap: balance">Todas las reservas de tu centro, en un solo lugar</h2>
+    <p style="margin: 0; font-size: 17px; line-height: 1.6; color: #B9D9CC; max-width: 44ch; text-wrap: pretty">Agenda una demo de 20 minutos: te mostramos Canchapp con tus propias canchas y horarios. Sin costo y sin compromiso.</p>
+    <sc-if value="{{ noEnviado }}" hint-placeholder-val="{{ true }}">
+      <div style="width: 100%; max-width: 440px; display: flex; flex-direction: column; gap: 12px">
+        <input value="{{ nombre }}" onChange="{{ cambiarNombre }}" placeholder="Tu nombre" style="padding: 14px 16px; border-radius: 12px; border: 1px solid #0B6E4F; background: #FFFFFF; font-size: 15px; font-family: inherit; color: #0F1A14">
+        <input value="{{ centro }}" onChange="{{ cambiarCentro }}" placeholder="Nombre de tu centro" style="padding: 14px 16px; border-radius: 12px; border: 1px solid #0B6E4F; background: #FFFFFF; font-size: 15px; font-family: inherit; color: #0F1A14">
+        <input value="{{ contacto }}" onChange="{{ cambiarContacto }}" placeholder="WhatsApp o correo" style="padding: 14px 16px; border-radius: 12px; border: 1px solid #0B6E4F; background: #FFFFFF; font-size: 15px; font-family: inherit; color: #0F1A14">
+        <button onClick="{{ enviar }}" style="background: #22C55E; color: #04331F; border: none; border-radius: 12px; padding: 16px; font-family: Sora, sans-serif; font-weight: 800; font-size: 17px; cursor: pointer; transition: transform 0.2s ease, background 0.2s ease" style-hover="background: #34D96E; transform: scale(1.02)">{{ ctaTexto }}</button>
+        <span style="font-family: ui-monospace, Menlo, monospace; font-size: 11px; color: #7FAF9A">[ conectar este formulario a tu Calendly, correo o WhatsApp ]</span>
+      </div>
+    </sc-if>
+    <sc-if value="{{ enviado }}" hint-placeholder-val="{{ false }}">
+      <div style="background: rgba(255,255,255,0.08); border: 1px solid #0B6E4F; border-radius: 16px; padding: 28px; max-width: 440px">
+        <p style="margin: 0; font-family: Sora, sans-serif; font-weight: 700; font-size: 19px; color: #FFFFFF">¡Listo, {{ nombreConfirmacion }}!</p>
+        <p style="margin: 8px 0 0; font-size: 15px; line-height: 1.6; color: #B9D9CC">Te contactaremos dentro de un día hábil para coordinar tu demo.</p>
+      </div>
+    </sc-if>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer style="background: #04331F; border-top: 1px solid rgba(255,255,255,0.06)">
+  <div style="max-width: 1160px; margin: 0 auto; padding: 28px 24px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 14px">
+    <div style="display: flex; align-items: center; gap: 8px">
+      <span style="font-family: Sora, sans-serif; font-weight: 700; font-size: 16px; color: #FFFFFF">Canchapp</span>
+      <span style="font-size: 13px; color: #7FAF9A">· panel operativo para centros deportivos</span>
+    </div>
+    <div style="display: flex; flex-wrap: wrap; gap: 20px; align-items: center; font-size: 13px">
+      <a href="#como-funciona" style="color: #B9D9CC">Cómo funciona</a>
+      <a href="#faq" style="color: #B9D9CC">FAQ</a>
+      <a href="mailto:contacto@canchapp.cl" style="color: #B9D9CC">contacto@canchapp.cl</a>
+      <span style="color: #7FAF9A">Parte del ecosistema <a href="https://sportmatch.cl" style="color: #22C55E">Sportmatch.cl</a></span>
+    </div>
+  </div>
+</footer>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{
+  &quot;ctaTexto&quot;: { &quot;editor&quot;: &quot;text&quot;, &quot;default&quot;: &quot;Agendar una demo&quot;, &quot;tsType&quot;: &quot;string&quot;, &quot;section&quot;: &quot;Llamado a la acción&quot; },
+  &quot;mostrarPruebaSocial&quot;: { &quot;editor&quot;: &quot;boolean&quot;, &quot;default&quot;: true, &quot;tsType&quot;: &quot;boolean&quot;, &quot;section&quot;: &quot;Secciones&quot; }
+}">
+class Component extends DCLogic {
+  state = {
+    faqAbierta: 0,
+    nombre: '',
+    centro: '',
+    contacto: '',
+    enviado: false,
+  };
+
+  componentDidMount() {
+    const reducido = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reducido) return;
+
+    // Scroll reveal
+    const els = document.querySelectorAll('[data-reveal]');
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((e) => {
+        if (e.isIntersecting) {
+          e.target.style.opacity = '1';
+          e.target.style.transform = 'translateY(0)';
+          io.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.1 });
+    els.forEach((el) => {
+      const r = el.getBoundingClientRect();
+      if (r.top < window.innerHeight * 0.85) return;
+      el.style.opacity = '0';
+      el.style.transform = 'translateY(30px)';
+      el.style.transition = 'opacity 0.7s ease, transform 0.7s ease';
+      io.observe(el);
+    });
+    this._io = io;
+
+    // Parallax ligero en elementos decorativos
+    const pEls = Array.from(document.querySelectorAll('[data-parallax]'));
+    this._onScroll = () => {
+      const y = window.scrollY;
+      pEls.forEach((el) => {
+        const f = parseFloat(el.getAttribute('data-parallax')) || 0.05;
+        el.style.translate = '0 ' + (y * f * -1) + 'px';
+      });
+    };
+    window.addEventListener('scroll', this._onScroll, { passive: true });
+  }
+
+  componentWillUnmount() {
+    if (this._io) this._io.disconnect();
+    if (this._onScroll) window.removeEventListener('scroll', this._onScroll);
+  }
+
+  irADemo = () => {
+    const el = document.getElementById('demo');
+    if (!el) return;
+    const top = el.getBoundingClientRect().top + window.scrollY;
+    window.scrollTo({ top, behavior: 'smooth' });
+  };
+
+  renderVals() {
+    const ctaTexto = this.props.ctaTexto ?? 'Agendar una demo';
+
+    const bulletsConfianza = [
+      { texto: '20 minutos' },
+      { texto: 'sin costo' },
+      { texto: 'sin compromiso' },
+    ];
+
+    // Mini calendario del mockup (celdas: texto + colores; '' = celda vacía)
+    const vacia = { bg: '#F4F8F6', borde: '#EEF4F0', color: '#6B7F74', t: '' };
+    const verde = (t) => ({ bg: '#E6F4EE', borde: '#BCE0D0', color: '#0B6E4F', t });
+    const lila = (t) => ({ bg: '#EFEAFB', borde: '#D8CCF4', color: '#6D4FC2', t });
+    const rosa = (t) => ({ bg: '#FDEEEC', borde: '#F6CFC9', color: '#C2534F', t });
+    const filasBase = [
+      { hora: '08:00', celdas: [vacia, lila('Equipo A 08:00'), vacia, vacia] },
+      { hora: '09:00', celdas: [verde('Juan P. 09:00'), vacia, vacia, vacia] },
+      { hora: '10:00', celdas: [vacia, rosa('Carlos R. 10:00'), vacia, vacia] },
+      { hora: '11:00', celdas: [vacia, vacia, verde('Partido 5v5'), vacia] },
+      { hora: '12:00', celdas: [verde('Felipe G. 12:00'), vacia, vacia, vacia] },
+      { hora: '13:00', celdas: [vacia, vacia, vacia, vacia] },
+    ];
+    const filasCalendario = filasBase.map((f) => ({
+      hora: f.hora,
+      c1: f.celdas[0].t, c1bg: f.celdas[0].bg, c1borde: f.celdas[0].borde, c1color: f.celdas[0].color,
+      c2: f.celdas[1].t, c2bg: f.celdas[1].bg, c2borde: f.celdas[1].borde, c2color: f.celdas[1].color,
+      c3: f.celdas[2].t, c3bg: f.celdas[2].bg, c3borde: f.celdas[2].borde, c3color: f.celdas[2].color,
+      c4: f.celdas[3].t, c4bg: f.celdas[3].bg, c4borde: f.celdas[3].borde, c4color: f.celdas[3].color,
+    }));
+
+    const iconoSvg = (paths) => React.createElement('svg', { width: 30, height: 30, viewBox: '0 0 24 24', fill: 'none', 'aria-hidden': true }, ...paths);
+    const stroke = (d, extra) => React.createElement('path', Object.assign({ d, stroke: '#0B6E4F', strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round' }, extra || {}));
+
+    const dolores = [
+      { icono: '✆', texto: 'Reservas que llegan por WhatsApp a cualquier hora y se pierden entre otros mensajes.' },
+      { icono: '⌗', texto: 'El cuaderno dice una cosa, el Excel dice otra, y dos clientes llegan a la misma cancha.' },
+      { icono: '◷', texto: 'Horas cada semana pasando datos a mano en vez de atender tu centro.' },
+    ];
+
+    const pasos = [
+      {
+        numero: '1', titulo: 'Carga tus canchas y horarios',
+        detalle: 'Defines tus canchas, precios y horario semanal una sola vez. Nosotros te ayudamos en la demo.',
+        slotId: 'paso-1', slotHint: 'Captura: pantalla de canchas',
+        iconoElemento: iconoSvg([
+          React.createElement('rect', { x: 3, y: 5, width: 18, height: 14, rx: 2, stroke: '#0B6E4F', strokeWidth: 1.8 }),
+          stroke('M12 5v14'),
+          React.createElement('circle', { cx: 12, cy: 12, r: 2.4, stroke: '#0B6E4F', strokeWidth: 1.6 }),
+        ]),
+      },
+      {
+        numero: '2', titulo: 'Las reservas entran solas',
+        detalle: 'Los jugadores reservan desde Sportmatch.cl y cada reserva queda registrada, con nombre y hora.',
+        slotId: 'paso-2', slotHint: 'Captura: lista de reservas',
+        iconoElemento: iconoSvg([
+          React.createElement('rect', { x: 3, y: 4, width: 18, height: 17, rx: 2, stroke: '#0B6E4F', strokeWidth: 1.8 }),
+          stroke('M3 9h18'), stroke('M8 2v4'), stroke('M16 2v4'),
+          stroke('M9 14.5l2 2 4-4.5'),
+        ]),
+      },
+      {
+        numero: '3', titulo: 'Confirmas desde donde estés',
+        detalle: 'Confirmas, cancelas o agregas reservas manuales desde el celular, la tablet o el PC. Todo en tiempo real.',
+        slotId: 'paso-3', slotHint: 'Captura: confirmar reserva',
+        iconoElemento: iconoSvg([
+          React.createElement('rect', { x: 7, y: 2.5, width: 10, height: 19, rx: 2.5, stroke: '#0B6E4F', strokeWidth: 1.8 }),
+          stroke('M10 18.5h4'),
+          stroke('M9.5 10.5l2 2 3.5-4'),
+        ]),
+      },
+    ];
+
+    const beneficios = [
+      {
+        titulo: 'Más ingresos', detalle: 'Menos huecos vacíos: tus canchas visibles en Sportmatch.cl y reservables a toda hora.',
+        iconoElemento: iconoSvg([stroke('M4 19V5'), stroke('M4 19h16'), stroke('M7 15l4-4 3 3 5-6'), stroke('M19 8V6h-2')]),
+      },
+      {
+        titulo: 'Menos errores', detalle: 'Todo centralizado y con trazabilidad: quién reservó, cuándo, en qué cancha y qué pasó con la reserva.',
+        iconoElemento: iconoSvg([stroke('M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6l7-3Z'), stroke('M9 11.5l2 2 4-4.5')]),
+      },
+      {
+        titulo: 'Mejor experiencia para tus clientes', detalle: 'Reservan en segundos y reciben confirmación al instante — sin esperar tu respuesta por WhatsApp.',
+        iconoElemento: iconoSvg([React.createElement('circle', { cx: 12, cy: 12, r: 9, stroke: '#0B6E4F', strokeWidth: 1.8 }), stroke('M8 14s1.5 2 4 2 4-2 4-2'), stroke('M9 9.5h.01'), stroke('M15 9.5h.01')]),
+      },
+      {
+        titulo: 'Panel web + móvil, siempre contigo', detalle: 'PC, tablet o celular — la misma información, siempre al día, con una interfaz simple de usar.',
+        iconoElemento: iconoSvg([React.createElement('rect', { x: 2.5, y: 5, width: 14, height: 10, rx: 1.5, stroke: '#0B6E4F', strokeWidth: 1.8 }), stroke('M7 18.5h5'), stroke('M9.5 15v3.5'), React.createElement('rect', { x: 16.5, y: 9, width: 5, height: 9.5, rx: 1.2, stroke: '#0B6E4F', strokeWidth: 1.8, fill: '#F4F8F6' })]),
+      },
+    ];
+
+    const logosPlaceholder = [{}, {}, {}, {}];
+
+    const faqsBase = [
+      { pregunta: '¿Qué es Canchapp?', respuesta: 'Un panel operativo para tu centro deportivo: reservas, canchas, horarios y confirmaciones en un solo lugar, en vez de repartidos entre WhatsApp, cuaderno y Excel.' },
+      { pregunta: '¿Se conecta con Sportmatch?', respuesta: 'Sí. Los jugadores que buscan cancha en Sportmatch.cl te encuentran y reservan directo en tu centro; la reserva aparece en tu panel al instante.' },
+      { pregunta: '¿Necesito cambiar mi forma de cobrar?', respuesta: 'No. Canchapp organiza las reservas; tú sigues cobrando como lo haces hoy. Cada reserva queda registrada para que cuadres todo sin dudas.' },
+      { pregunta: '¿Funciona en celular?', respuesta: 'Sí — celular, tablet y PC. Es la misma información en todos tus dispositivos, siempre al día.' },
+      { pregunta: '¿Cuánto demora implementar?', respuesta: 'En la demo de 20 minutos dejamos cargadas tus canchas y horarios contigo. Desde ese momento ya puedes recibir reservas.' },
+    ];
+
+    const faqs = faqsBase.map((f, i) => {
+      const abierta = this.state.faqAbierta === i;
+      return {
+        ...f,
+        filas: abierta ? '1fr' : '0fr',
+        rotacion: abierta ? 'rotate(45deg)' : 'rotate(0deg)',
+        alternar: () => this.setState(s => ({ faqAbierta: s.faqAbierta === i ? -1 : i })),
+      };
+    });
+
+    return {
+      ctaTexto,
+      mostrarPruebaSocial: this.props.mostrarPruebaSocial ?? true,
+      bulletsConfianza,
+      filasCalendario,
+      dolores,
+      pasos,
+      beneficios,
+      logosPlaceholder,
+      faqs,
+      irADemo: this.irADemo,
+      nombre: this.state.nombre,
+      centro: this.state.centro,
+      contacto: this.state.contacto,
+      cambiarNombre: (e) => this.setState({ nombre: e.target.value }),
+      cambiarCentro: (e) => this.setState({ centro: e.target.value }),
+      cambiarContacto: (e) => this.setState({ contacto: e.target.value }),
+      enviado: this.state.enviado,
+      noEnviado: !this.state.enviado,
+      nombreConfirmacion: this.state.nombre.trim() || 'gracias',
+      enviar: () => this.setState({ enviado: true }),
+    };
+  }
+}
+</script>
+</body>
+</html>
