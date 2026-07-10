@@ -1,22 +1,23 @@
 import { Redirect } from 'expo-router'
-import { ActivityIndicator, StyleSheet, Text, View } from 'react-native'
+import { useEffect } from 'react'
+import { ActivityIndicator, Platform, StyleSheet, Text, View } from 'react-native'
 
 import { useAuth } from '@/lib/auth/provider'
 import { isSupabaseConfigured } from '@/lib/supabase/client'
 import { colors, spacing } from '@/lib/theme'
 
 function LandingWeb() {
+  useEffect(() => {
+    if (Platform.OS !== 'web' || typeof window === 'undefined') return
+    if (!window.location.pathname.includes('/landing/')) {
+      window.location.replace('/landing/index.html')
+    }
+  }, [])
+
   return (
-    <iframe
-      src="/landing/index.html"
-      title="Canchapp — panel para centros deportivos"
-      style={{
-        border: 'none',
-        width: '100%',
-        height: '100vh',
-        display: 'block',
-      }}
-    />
+    <View style={styles.center}>
+      <ActivityIndicator size="large" color={colors.primary} />
+    </View>
   )
 }
 

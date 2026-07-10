@@ -9,6 +9,7 @@ import Animated, {
 } from 'react-native-reanimated'
 
 import { PitchDivider } from '@/components/ui/PitchDivider'
+import { useIsCompactLayout } from '@/lib/layout'
 import { colors, radii, spacing, typography } from '@/lib/theme'
 
 type DateNavigatorProps = {
@@ -55,15 +56,18 @@ function NavButton({
 }
 
 export function DateNavigator({ label, onPrev, onNext }: DateNavigatorProps) {
+  const compact = useIsCompactLayout()
+
   return (
     <View style={styles.wrap}>
-      <View style={styles.bar}>
+      <View style={[styles.bar, compact && styles.barCompact]}>
         <NavButton icon="chevron-back" onPress={onPrev} />
         <Animated.Text
           key={label}
           entering={FadeIn.duration(280)}
           exiting={FadeOut.duration(180)}
-          style={styles.label}
+          style={[styles.label, compact && styles.labelCompact]}
+          numberOfLines={compact ? 2 : 1}
         >
           {label}
         </Animated.Text>
@@ -88,6 +92,10 @@ const styles = StyleSheet.create({
     paddingTop: spacing.md,
     paddingBottom: spacing.sm,
   },
+  barCompact: {
+    paddingHorizontal: spacing.md,
+    paddingTop: spacing.sm,
+  },
   dividerWrap: {
     paddingHorizontal: spacing.lg,
     paddingBottom: spacing.sm,
@@ -107,5 +115,9 @@ const styles = StyleSheet.create({
     flex: 1,
     textAlign: 'center',
     marginHorizontal: spacing.sm,
+  },
+  labelCompact: {
+    fontSize: 14,
+    lineHeight: 18,
   },
 })

@@ -21,6 +21,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { AnimatedCounter } from '@/components/ui/AnimatedCounter'
 import { PitchDivider } from '@/components/ui/PitchDivider'
 import { PulseGlow } from '@/components/ui/PulseGlow'
+import { useIsCompactLayout } from '@/lib/layout'
 import { colors, layout, spacing, typography } from '@/lib/theme'
 
 type ScreenProps = ScrollViewProps & {
@@ -34,10 +35,15 @@ export function Screen({
   contentContainerStyle,
   ...rest
 }: ScreenProps) {
+  const compact = useIsCompactLayout()
+
   return (
     <ScrollView
       style={styles.scroll}
-      contentContainerStyle={[padded && styles.content, contentContainerStyle]}
+      contentContainerStyle={[
+        padded && (compact ? styles.contentCompact : styles.content),
+        contentContainerStyle,
+      ]}
       showsVerticalScrollIndicator={false}
       {...rest}
     >
@@ -84,10 +90,15 @@ function HeroParticle({ style }: { style: object }) {
 /** Panel de marcador: header de noche de partido, firma visual del panel. */
 export function ScreenHero({ venueName, subtitle, stats }: ScreenHeroProps) {
   const insets = useSafeAreaInsets()
+  const compact = useIsCompactLayout()
 
   return (
     <View
-      style={[styles.hero, { paddingTop: insets.top + spacing.sm }]}
+      style={[
+        styles.hero,
+        compact && styles.heroCompact,
+        { paddingTop: insets.top + spacing.sm },
+      ]}
     >
       <View style={styles.heroAtmosphere} pointerEvents="none">
         <View style={styles.heroGradientTop} />
@@ -99,25 +110,39 @@ export function ScreenHero({ venueName, subtitle, stats }: ScreenHeroProps) {
         <HeroParticle style={styles.particleC} />
       </View>
 
-      <View style={styles.heroTop}>
+      <View style={[styles.heroTop, compact && styles.heroTopCompact]}>
         <View style={styles.heroBadge}>
           <Ionicons name="football" size={12} color={colors.onPitch} />
           <Text style={styles.heroBadgeText}>Canchapp</Text>
         </View>
-        {subtitle ? <Text style={styles.heroClock}>{subtitle}</Text> : null}
+        {subtitle && !compact ? (
+          <Text style={styles.heroClock} numberOfLines={1}>
+            {subtitle}
+          </Text>
+        ) : null}
       </View>
 
-      {venueName ? <Text style={styles.heroTitle}>{venueName}</Text> : null}
+      {venueName ? (
+        <Text
+          style={[styles.heroTitle, compact && styles.heroTitleCompact]}
+          numberOfLines={2}
+        >
+          {venueName}
+        </Text>
+      ) : null}
 
       {stats && stats.length > 0 ? (
-        <View style={styles.heroStats}>
+        <View style={[styles.heroStats, compact && styles.heroStatsCompact]}>
           {stats.map((s) => {
             const statContent = (
               <View style={styles.heroStat}>
                 <AnimatedCounter
                   value={s.numericValue}
                   suffix={s.suffix}
-                  style={styles.heroStatValue}
+                  style={[
+                    styles.heroStatValue,
+                    compact && styles.heroStatValueCompact,
+                  ]}
                 />
                 <Text style={styles.heroStatLabel}>{s.label}</Text>
               </View>
@@ -148,6 +173,10 @@ const styles = StyleSheet.create({
     padding: layout.screenPadding,
     paddingBottom: spacing.xxl,
   },
+  contentCompact: {
+    padding: spacing.md,
+    paddingBottom: spacing.xl,
+  },
   inner: {
     width: '100%',
     maxWidth: layout.maxContentWidth,
@@ -160,6 +189,12 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 28,
     borderBottomRightRadius: 28,
     overflow: 'hidden',
+  },
+  heroCompact: {
+    paddingHorizontal: spacing.md,
+    paddingBottom: spacing.md,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
   },
   heroAtmosphere: {
     ...StyleSheet.absoluteFill,
@@ -217,6 +252,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: spacing.md,
+    gap: spacing.sm,
+  },
+  heroTopCompact: {
+    marginBottom: spacing.sm,
   },
   heroBadge: {
     flexDirection: 'row',
@@ -237,10 +276,19 @@ const styles = StyleSheet.create({
     color: colors.onPitch,
     fontSize: 26,
   },
+  heroTitleCompact: {
+    fontSize: 22,
+    lineHeight: 28,
+  },
   heroStats: {
     flexDirection: 'row',
     gap: spacing.xl,
     marginTop: spacing.lg,
+  },
+  heroStatsCompact: {
+    flexWrap: 'wrap',
+    gap: spacing.md,
+    marginTop: spacing.md,
   },
   heroStat: {
     alignItems: 'flex-start',
@@ -248,6 +296,9 @@ const styles = StyleSheet.create({
   heroStatValue: {
     ...typography.score,
     color: colors.onPitch,
+  },
+  heroStatValueCompact: {
+    fontSize: 26,
   },
   heroStatLabel: {
     ...typography.eyebrow,

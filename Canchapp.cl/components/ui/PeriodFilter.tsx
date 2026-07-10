@@ -10,6 +10,7 @@ import {
   type DashboardPeriod,
   periodChipLabel,
 } from '@/lib/dashboard/period'
+import { useIsCompactLayout } from '@/lib/layout'
 import { colors, radii, spacing, typography } from '@/lib/theme'
 
 const PERIODS: DashboardPeriod[] = ['day', 'week', 'month']
@@ -22,6 +23,7 @@ type PeriodFilterProps = {
 type ChipLayout = { x: number; width: number }
 
 export function PeriodFilter({ value, onChange }: PeriodFilterProps) {
+  const compact = useIsCompactLayout()
   const [layouts, setLayouts] = useState<Partial<Record<DashboardPeriod, ChipLayout>>>(
     {}
   )
@@ -46,7 +48,7 @@ export function PeriodFilter({ value, onChange }: PeriodFilterProps) {
   }
 
   return (
-    <View style={styles.row}>
+    <View style={[styles.row, compact && styles.rowCompact]}>
       <Animated.View style={[styles.indicator, indicatorStyle]} />
       {PERIODS.map((period) => {
         const active = period === value
@@ -82,6 +84,10 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.sm,
     backgroundColor: colors.surface,
     position: 'relative',
+  },
+  rowCompact: {
+    paddingHorizontal: spacing.md,
+    paddingTop: spacing.sm,
   },
   indicator: {
     position: 'absolute',

@@ -86,14 +86,15 @@ export function shiftFocusDate(
 
 export function formatPeriodNavigatorLabel(
   period: DashboardPeriod,
-  focusDate: Date
+  focusDate: Date,
+  compact = false
 ): string {
   if (period === 'day') {
     return focusDate.toLocaleDateString('es-CL', {
-      weekday: 'long',
+      weekday: compact ? 'short' : 'long',
       day: 'numeric',
-      month: 'long',
-      year: 'numeric',
+      month: compact ? 'short' : 'long',
+      year: compact ? undefined : 'numeric',
     })
   }
 
@@ -110,13 +111,13 @@ export function formatPeriodNavigatorLabel(
     const toStr = toLast.toLocaleDateString('es-CL', {
       day: 'numeric',
       month: 'short',
-      year: 'numeric',
+      year: compact ? undefined : 'numeric',
     })
     return `${fromStr} – ${toStr}`
   }
 
   return focusDate.toLocaleDateString('es-CL', {
-    month: 'long',
+    month: compact ? 'short' : 'long',
     year: 'numeric',
   })
 }

@@ -51,6 +51,7 @@ import {
 } from '@/lib/dashboard/stats'
 import { useAuth } from '@/lib/auth/provider'
 import { useVenueReservationsRealtime } from '@/lib/hooks/use-venue-reservations-realtime'
+import { useIsCompactLayout } from '@/lib/layout'
 import { formatCLP } from '@/lib/money'
 import { getSupabase } from '@/lib/supabase/client'
 import {
@@ -84,6 +85,7 @@ import Animated, { FadeInDown, FadeInRight, ZoomIn } from 'react-native-reanimat
 export default function ResumenScreen() {
   const { venue } = useAuth()
   const router = useRouter()
+  const compact = useIsCompactLayout()
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
   const [courts, setCourts] = useState<VenueCourt[]>([])
@@ -474,7 +476,7 @@ export default function ResumenScreen() {
         }}
       />
       <DateNavigator
-        label={formatPeriodNavigatorLabel(period, focusDate)}
+        label={formatPeriodNavigatorLabel(period, focusDate, compact)}
         onPrev={() =>
           setFocusDate((d) => shiftFocusDate(period, d, -1))
         }

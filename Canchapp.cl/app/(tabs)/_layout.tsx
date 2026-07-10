@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons'
 import { Tabs } from 'expo-router'
 import { useEffect } from 'react'
-import { Platform, StyleSheet, View, type ColorValue } from 'react-native'
+import { StyleSheet, View, type ColorValue } from 'react-native'
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -14,6 +14,7 @@ import Animated, {
 
 import { AuthGate } from '@/lib/auth/use-auth-redirect'
 import { useAuth } from '@/lib/auth/provider'
+import { useTabBarInsets } from '@/lib/layout'
 import { colors, headerStyle, headerTitleStyle } from '@/lib/theme'
 
 type TabIconProps = {
@@ -82,6 +83,7 @@ function TabIcon({ name, color, focused }: TabIconProps) {
 
 export default function TabsLayout() {
   const { venue } = useAuth()
+  const tabInsets = useTabBarInsets()
 
   return (
     <AuthGate expect="app">
@@ -90,7 +92,13 @@ export default function TabsLayout() {
           tabBarActiveTintColor: colors.primary,
           tabBarInactiveTintColor: colors.textMuted,
           tabBarLabelStyle: styles.tabLabel,
-          tabBarStyle: styles.tabBar,
+          tabBarStyle: [
+            styles.tabBar,
+            {
+              height: tabInsets.height,
+              paddingBottom: tabInsets.paddingBottom,
+            },
+          ],
           headerStyle,
           headerTitleStyle,
           headerShadowVisible: false,
@@ -154,14 +162,13 @@ const styles = StyleSheet.create({
     backgroundColor: colors.tabBar,
     borderTopColor: colors.borderLight,
     borderTopWidth: 1,
-    height: Platform.OS === 'ios' ? 88 : 64,
     paddingTop: 6,
-    paddingBottom: Platform.OS === 'ios' ? 24 : 8,
   },
   tabLabel: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '600',
     marginTop: 2,
+    marginBottom: 2,
   },
   tabIconWrap: {
     alignItems: 'center',
