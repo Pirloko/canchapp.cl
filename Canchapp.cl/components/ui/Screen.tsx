@@ -21,7 +21,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { AnimatedCounter } from '@/components/ui/AnimatedCounter'
 import { PitchDivider } from '@/components/ui/PitchDivider'
 import { PulseGlow } from '@/components/ui/PulseGlow'
-import { useIsCompactLayout } from '@/lib/layout'
+import { useIsCompactLayout, useIsDesktopLayout } from '@/lib/layout'
 import { colors, layout, spacing, typography } from '@/lib/theme'
 
 type ScreenProps = ScrollViewProps & {
@@ -36,6 +36,7 @@ export function Screen({
   ...rest
 }: ScreenProps) {
   const compact = useIsCompactLayout()
+  const desktop = useIsDesktopLayout()
 
   return (
     <ScrollView
@@ -47,7 +48,9 @@ export function Screen({
       showsVerticalScrollIndicator={false}
       {...rest}
     >
-      <View style={styles.inner}>{children}</View>
+      <View style={[styles.inner, desktop && styles.innerWide]}>
+        {children}
+      </View>
     </ScrollView>
   )
 }
@@ -87,16 +90,22 @@ function HeroParticle({ style }: { style: object }) {
   return <Animated.View style={[styles.particle, style, anim]} />
 }
 
-/** Panel de marcador: header de noche de partido, firma visual del panel. */
+/**
+ * Panel de marcador: banda de noche de partido, firma visual del panel.
+ * En escritorio es un ticker de una sola fila: nombre a la izquierda,
+ * marcador a la derecha.
+ */
 export function ScreenHero({ venueName, subtitle, stats }: ScreenHeroProps) {
   const insets = useSafeAreaInsets()
   const compact = useIsCompactLayout()
+  const desktop = useIsDesktopLayout()
 
   return (
     <View
       style={[
         styles.hero,
         compact && styles.heroCompact,
+        desktop && styles.heroDesktop,
         { paddingTop: insets.top + spacing.sm },
       ]}
     >
@@ -110,54 +119,77 @@ export function ScreenHero({ venueName, subtitle, stats }: ScreenHeroProps) {
         <HeroParticle style={styles.particleC} />
       </View>
 
-      <View style={[styles.heroTop, compact && styles.heroTopCompact]}>
-        <View style={styles.heroBadge}>
-          <Ionicons name="football" size={12} color={colors.onPitch} />
-          <Text style={styles.heroBadgeText}>Canchapp</Text>
+      <View style={[styles.heroInner, desktop && styles.heroInnerDesktop]}>
+        <View style={desktop ? styles.heroLeftDesktop : undefined}>
+          <View
+            style={[
+              styles.heroTop,
+              compact && styles.heroTopCompact,
+              desktop && styles.heroTopDesktop,
+            ]}
+          >
+            <View style={styles.heroBadge}>
+              <Ionicons name="football" size={12} color={colors.onPitch} />
+              <Text style={styles.heroBadgeText}>Canchapp</Text>
+            </View>
+            {subtitle && !compact ? (
+              <Text style={styles.heroClock} numberOfLines={1}>
+                {subtitle}
+              </Text>
+            ) : null}
+          </View>
+
+          {venueName ? (
+            <Text
+              style={[
+                styles.heroTitle,
+                compact && styles.heroTitleCompact,
+                desktop && styles.heroTitleDesktop,
+              ]}
+              numberOfLines={desktop ? 1 : 2}
+            >
+              {venueName}
+            </Text>
+          ) : null}
         </View>
-        {subtitle && !compact ? (
-          <Text style={styles.heroClock} numberOfLines={1}>
-            {subtitle}
-          </Text>
+
+        {stats && stats.length > 0 ? (
+          <View
+            style={[
+              styles.heroStats,
+              compact && styles.heroStatsCompact,
+              desktop && styles.heroStatsDesktop,
+            ]}
+          >
+            {stats.map((s) => {
+              const statContent = (
+                <View style={styles.heroStat}>
+                  <AnimatedCounter
+                    value={s.numericValue}
+                    suffix={s.suffix}
+                    style={[
+                      styles.heroStatValue,
+                      compact && styles.heroStatValueCompact,
+                      desktop && styles.heroStatValueDesktop,
+                    ]}
+                  />
+                  <Text style={styles.heroStatLabel}>{s.label}</Text>
+                </View>
+              )
+
+              return s.glow ? (
+                <PulseGlow key={s.label}>{statContent}</PulseGlow>
+              ) : (
+                <View key={s.label}>{statContent}</View>
+              )
+            })}
+          </View>
         ) : null}
       </View>
 
-      {venueName ? (
-        <Text
-          style={[styles.heroTitle, compact && styles.heroTitleCompact]}
-          numberOfLines={2}
-        >
-          {venueName}
-        </Text>
-      ) : null}
-
-      {stats && stats.length > 0 ? (
-        <View style={[styles.heroStats, compact && styles.heroStatsCompact]}>
-          {stats.map((s) => {
-            const statContent = (
-              <View style={styles.heroStat}>
-                <AnimatedCounter
-                  value={s.numericValue}
-                  suffix={s.suffix}
-                  style={[
-                    styles.heroStatValue,
-                    compact && styles.heroStatValueCompact,
-                  ]}
-                />
-                <Text style={styles.heroStatLabel}>{s.label}</Text>
-              </View>
-            )
-
-            return s.glow ? (
-              <PulseGlow key={s.label}>{statContent}</PulseGlow>
-            ) : (
-              <View key={s.label}>{statContent}</View>
-            )
-          })}
-        </View>
-      ) : null}
-
-      <View style={styles.heroDividerWrap}>
+      <View
+        style={[styles.heroDividerWrap, desktop && styles.heroDividerWrapDesktop]}
+      >
         <PitchDivider tone="dark" />
       </View>
     </View>
@@ -182,19 +214,43 @@ const styles = StyleSheet.create({
     maxWidth: layout.maxContentWidth,
     alignSelf: 'center',
   },
+  innerWide: {
+    maxWidth: layout.maxContentWidthWide,
+  },
   hero: {
     backgroundColor: colors.pitchDeep,
     paddingHorizontal: spacing.lg,
-    paddingBottom: spacing.lg,
-    borderBottomLeftRadius: 28,
-    borderBottomRightRadius: 28,
+    paddingBottom: spacing.md,
+    borderBottomLeftRadius: 24,
+    borderBottomRightRadius: 24,
     overflow: 'hidden',
   },
   heroCompact: {
     paddingHorizontal: spacing.md,
-    paddingBottom: spacing.md,
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
+    paddingBottom: spacing.sm + 4,
+    borderBottomLeftRadius: 18,
+    borderBottomRightRadius: 18,
+  },
+  heroDesktop: {
+    paddingHorizontal: spacing.xl,
+    paddingBottom: spacing.sm + 2,
+    borderBottomLeftRadius: 0,
+    borderBottomRightRadius: 0,
+  },
+  heroInner: {
+    width: '100%',
+  },
+  heroInnerDesktop: {
+    maxWidth: layout.maxContentWidthWide,
+    alignSelf: 'center',
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    justifyContent: 'space-between',
+    gap: spacing.xl,
+  },
+  heroLeftDesktop: {
+    flexShrink: 1,
+    minWidth: 0,
   },
   heroAtmosphere: {
     ...StyleSheet.absoluteFill,
@@ -251,11 +307,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: spacing.md,
+    marginBottom: spacing.sm,
     gap: spacing.sm,
   },
   heroTopCompact: {
-    marginBottom: spacing.sm,
+    marginBottom: spacing.xs + 2,
+  },
+  heroTopDesktop: {
+    justifyContent: 'flex-start',
+    gap: spacing.md,
+    marginBottom: spacing.xs,
   },
   heroBadge: {
     flexDirection: 'row',
@@ -274,30 +335,42 @@ const styles = StyleSheet.create({
   heroTitle: {
     ...typography.hero,
     color: colors.onPitch,
-    fontSize: 26,
+    fontSize: 22,
   },
   heroTitleCompact: {
-    fontSize: 22,
-    lineHeight: 28,
+    fontSize: 20,
+    lineHeight: 26,
+  },
+  heroTitleDesktop: {
+    fontSize: 24,
   },
   heroStats: {
     flexDirection: 'row',
     gap: spacing.xl,
-    marginTop: spacing.lg,
+    marginTop: spacing.md,
   },
   heroStatsCompact: {
     flexWrap: 'wrap',
     gap: spacing.md,
-    marginTop: spacing.md,
+    marginTop: spacing.sm + 4,
+  },
+  heroStatsDesktop: {
+    marginTop: 0,
+    gap: spacing.xl + spacing.sm,
+    flexShrink: 0,
   },
   heroStat: {
     alignItems: 'flex-start',
   },
   heroStatValue: {
     ...typography.score,
+    fontSize: 28,
     color: colors.onPitch,
   },
   heroStatValueCompact: {
+    fontSize: 24,
+  },
+  heroStatValueDesktop: {
     fontSize: 26,
   },
   heroStatLabel: {
@@ -306,6 +379,12 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   heroDividerWrap: {
-    marginTop: spacing.lg,
+    marginTop: spacing.md,
+  },
+  heroDividerWrapDesktop: {
+    marginTop: spacing.sm + 2,
+    width: '100%',
+    maxWidth: layout.maxContentWidthWide,
+    alignSelf: 'center',
   },
 })

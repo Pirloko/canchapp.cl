@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native'
+import Animated, { FadeInDown } from 'react-native-reanimated'
 
 import { Button } from '@/components/ui/Button'
 import { Card, CardTitle } from '@/components/ui/Card'
@@ -9,6 +10,7 @@ import { FeedbackBanner } from '@/components/ui/FeedbackBanner'
 import { Field } from '@/components/ui/Field'
 import { Screen } from '@/components/ui/Screen'
 import { useAuth } from '@/lib/auth/provider'
+import { useIsDesktopLayout } from '@/lib/layout'
 import {
   deleteVenueCourtById,
   insertVenueCourtRow,
@@ -16,7 +18,7 @@ import {
 } from '@/lib/supabase/venue-owner-mutations'
 import { getSupabase } from '@/lib/supabase/client'
 import { fetchVenueCourts } from '@/lib/supabase/venue-queries'
-import { colors, spacing, typography } from '@/lib/theme'
+import { colors, radii, spacing, typography } from '@/lib/theme'
 import type { VenueCourt } from '@/lib/types'
 
 /** Mini marca de cancha — línea central y círculo, la misma firma del panel a escala de icono. */
@@ -31,6 +33,7 @@ function CourtGlyph() {
 
 export default function CanchasScreen() {
   const { venue } = useAuth()
+  const desktop = useIsDesktopLayout()
   const [courts, setCourts] = useState<VenueCourt[]>([])
   const [newName, setNewName] = useState('')
   const [loading, setLoading] = useState(true)
@@ -127,18 +130,83 @@ export default function CanchasScreen() {
 
   if (!venue) return null
 
-  return (
-    <Screen>
-      <Card elevated>
-        <CardTitle>Nueva cancha</CardTitle>
+  const newCourtForm = desktop ? (
+    <View style={styles.newCourtBarInner}>
+      <View style={styles.newCourtField}>
         <Field
-          label="Nombre"
+          label="Nueva cancha"
           value={newName}
           onChangeText={setNewName}
           placeholder="Ej. Cancha 1"
         />
-        <Button label="Agregar cancha" onPress={() => void addCourt()} />
+      </View>
+      <Button
+        label="Agregar"
+        size="sm"
+        fullWidth={false}
+        onPress={() => void addCourt()}
+        style={styles.newCourtBtn}
+      />
+    </View>
+  ) : (
+    <Card elevated>
+      <CardTitle>Nueva cancha</CardTitle>
+      <Field
+        label="Nombre"
+        value={newName}
+        onChangeText={setNewName}
+        placeholder="Ej. Cancha 1"
+      />
+      <Button label="Agregar cancha" onPress={() => void addCourt()} />
+    </Card>
+  )
+
+  const courtCards = courts.map((c, idx) => (
+    <Animated.View
+      key={c.id}
+      entering={FadeInDown.duration(300).delay(Math.min(idx, 8) * 50)}
+      style={desktop && styles.courtTile}
+    >
+      <Card elevated compact={desktop} style={desktop ? styles.courtCard : undefined}>
+        <View style={styles.cardTop}>
+          <CourtGlyph />
+          <Text style={styles.name}>{c.name}</Text>
+        </View>
+        <Field
+          label="Precio por hora (CLP)"
+          value={priceEdits[c.id] ?? ''}
+          onChangeText={(v) =>
+            setPriceEdits((prev) => ({ ...prev, [c.id]: v }))
+          }
+          keyboardType="number-pad"
+        />
+        <View style={styles.row}>
+          <Button
+            label="Guardar precio"
+            variant="secondary"
+            size={desktop ? 'sm' : 'md'}
+            onPress={() => void savePrice(c.id)}
+            style={styles.half}
+          />
+          <Button
+            label="Eliminar"
+            variant="danger"
+            size={desktop ? 'sm' : 'md'}
+            onPress={() => setDeleteTarget({ id: c.id, name: c.name })}
+            style={styles.half}
+          />
+        </View>
       </Card>
+    </Animated.View>
+  ))
+
+  return (
+    <Screen>
+      {desktop ? (
+        <View style={styles.newCourtBar}>{newCourtForm}</View>
+      ) : (
+        newCourtForm
+      )}
 
       {feedback ? (
         <FeedbackBanner message={feedback.message} type={feedback.type} />
@@ -152,37 +220,10 @@ export default function CanchasScreen() {
           title="Aún no tienes canchas"
           subtitle="Agrega la primera cancha para empezar a recibir reservas."
         />
+      ) : desktop ? (
+        <View style={styles.courtGrid}>{courtCards}</View>
       ) : (
-        courts.map((c) => (
-          <Card key={c.id} elevated>
-            <View style={styles.cardTop}>
-              <CourtGlyph />
-              <Text style={styles.name}>{c.name}</Text>
-            </View>
-            <Field
-              label="Precio por hora (CLP)"
-              value={priceEdits[c.id] ?? ''}
-              onChangeText={(v) =>
-                setPriceEdits((prev) => ({ ...prev, [c.id]: v }))
-              }
-              keyboardType="number-pad"
-            />
-            <View style={styles.row}>
-              <Button
-                label="Guardar precio"
-                variant="secondary"
-                onPress={() => void savePrice(c.id)}
-                style={styles.half}
-              />
-              <Button
-                label="Eliminar"
-                variant="danger"
-                onPress={() => setDeleteTarget({ id: c.id, name: c.name })}
-                style={styles.half}
-              />
-            </View>
-          </Card>
-        ))
+        courtCards
       )}
 
       <ConfirmModal
@@ -243,4 +284,30 @@ const styles = StyleSheet.create({
   },
   row: { flexDirection: 'row', gap: spacing.sm },
   half: { flex: 1 },
+  newCourtBar: {
+    marginBottom: spacing.lg,
+  },
+  newCourtBarInner: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    gap: spacing.md,
+  },
+  newCourtField: {
+    width: 280,
+  },
+  newCourtBtn: {
+    marginBottom: spacing.md,
+  },
+  courtGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.md,
+  },
+  courtTile: {
+    width: '31.5%',
+    minWidth: 260,
+  },
+  courtCard: {
+    borderRadius: radii.lg,
+  },
 })

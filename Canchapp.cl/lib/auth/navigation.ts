@@ -9,7 +9,7 @@ export function pathForAuthRoute(route: AuthRoute): string {
     case 'onboarding':
       return '/onboarding'
     case 'app':
-      return '/(tabs)/reservas'
+      return '/(tabs)/resumen'
     default:
       return '/'
   }

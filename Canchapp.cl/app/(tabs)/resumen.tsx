@@ -22,6 +22,7 @@ import { FloatingIcon } from '@/components/ui/FloatingIcon'
 import { OccupancyBoard } from '@/components/ui/OccupancyBoard'
 import { PendingCountChip } from '@/components/ui/PendingCountChip'
 import { PeriodFilter } from '@/components/ui/PeriodFilter'
+import { PitchDivider } from '@/components/ui/PitchDivider'
 import { Screen, ScreenHero } from '@/components/ui/Screen'
 import { StatusBadge } from '@/components/ui/StatusBadge'
 import { WeekPulse, type WeekDayPoint } from '@/components/ui/WeekPulse'
@@ -51,7 +52,7 @@ import {
 } from '@/lib/dashboard/stats'
 import { useAuth } from '@/lib/auth/provider'
 import { useVenueReservationsRealtime } from '@/lib/hooks/use-venue-reservations-realtime'
-import { useIsCompactLayout } from '@/lib/layout'
+import { useIsCompactLayout, useIsDesktopLayout } from '@/lib/layout'
 import { formatCLP } from '@/lib/money'
 import { getSupabase } from '@/lib/supabase/client'
 import {
@@ -74,7 +75,7 @@ import {
   minutesOfDay,
   toDateInputValue,
 } from '@/lib/venue-slots'
-import { colors, radii, spacing, typography } from '@/lib/theme'
+import { colors, layout, radii, spacing, typography } from '@/lib/theme'
 import type {
   VenueCourt,
   VenueReservationRow,
@@ -86,6 +87,7 @@ export default function ResumenScreen() {
   const { venue } = useAuth()
   const router = useRouter()
   const compact = useIsCompactLayout()
+  const desktop = useIsDesktopLayout()
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
   const [courts, setCourts] = useState<VenueCourt[]>([])
@@ -451,61 +453,26 @@ export default function ResumenScreen() {
   const focusDayLabel = formatDateLine(new Date(`${focusDayKey}T12:00:00`))
   const isFocusToday = focusDayKey === todayKey
 
-  return (
-    <View style={styles.flex}>
-      <ScreenHero
-        venueName={venue.name}
-        subtitle={formatPeriodNavigatorLabel(period, focusDate)}
-        stats={[
-          { numericValue: stats.pending, label: 'Pendientes' },
-          { numericValue: stats.confirmed, label: 'Confirmadas' },
-          {
-            numericValue: stats.occupancy,
-            suffix: '%',
-            label: 'Ocupación',
-            glow: true,
-          },
-        ]}
-      />
+  const periodFilter = (
+    <PeriodFilter
+      value={period}
+      onChange={(next) => {
+        setPeriod(next)
+        setFocusDate(startOfDay(new Date()))
+      }}
+    />
+  )
 
-      <PeriodFilter
-        value={period}
-        onChange={(next) => {
-          setPeriod(next)
-          setFocusDate(startOfDay(new Date()))
-        }}
-      />
-      <DateNavigator
-        label={formatPeriodNavigatorLabel(period, focusDate, compact)}
-        onPrev={() =>
-          setFocusDate((d) => shiftFocusDate(period, d, -1))
-        }
-        onNext={() =>
-          setFocusDate((d) => shiftFocusDate(period, d, 1))
-        }
-      />
+  const dateNavigator = (
+    <DateNavigator
+      label={formatPeriodNavigatorLabel(period, focusDate, compact)}
+      onPrev={() => setFocusDate((d) => shiftFocusDate(period, d, -1))}
+      onNext={() => setFocusDate((d) => shiftFocusDate(period, d, 1))}
+      showDivider={!desktop}
+    />
+  )
 
-      <Screen
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={() => {
-              setRefreshing(true)
-              void load().finally(() => setRefreshing(false))
-            }}
-            tintColor={colors.primary}
-          />
-        }
-      >
-        {feedback ? (
-          <FeedbackBanner message={feedback.message} type={feedback.type} />
-        ) : null}
-
-        {loading ? (
-          <ActivityIndicator color={colors.primary} style={styles.loader} />
-        ) : (
-          <>
-            <AnimatedSection index={0}>
+  const informesCard = (
             <Card>
               <CardTitle>Informes</CardTitle>
               <CardSubtitle>
@@ -564,9 +531,9 @@ export default function ResumenScreen() {
                 </Animated.View>
               ) : null}
             </Card>
-            </AnimatedSection>
+  )
 
-            <AnimatedSection index={1}>
+  const pendientesCard = (
             <Card>
               <View style={styles.cardHead}>
                 <CardTitle>Por confirmar</CardTitle>
@@ -637,9 +604,9 @@ export default function ResumenScreen() {
                 })
               )}
             </Card>
-            </AnimatedSection>
+  )
 
-            <AnimatedSection index={2}>
+  const pizarraCard = (
             <Card>
               <CardTitle>
                 {isFocusToday ? 'Pizarra de hoy' : `Pizarra · ${focusDayLabel}`}
@@ -709,9 +676,9 @@ export default function ResumenScreen() {
                 </Animated.View>
               ) : null}
             </Card>
-            </AnimatedSection>
+  )
 
-            <AnimatedSection index={3}>
+  const tilesRow = (
             <View style={styles.tileRow}>
               <Card style={styles.tile} compact>
                 <FloatingIcon>
@@ -750,9 +717,9 @@ export default function ResumenScreen() {
                 </Text>
               </Card>
             </View>
-            </AnimatedSection>
+  )
 
-            <AnimatedSection index={4}>
+  const ritmoCard = (
             <Card>
               <CardTitle>
                 {period === 'month'
@@ -784,9 +751,9 @@ export default function ResumenScreen() {
                 </Text>
               ) : null}
             </Card>
-            </AnimatedSection>
+  )
 
-            <AnimatedSection index={5}>
+  const operacionCard = (
             <Card>
               <CardTitle>Operación</CardTitle>
               {[
@@ -829,7 +796,81 @@ export default function ResumenScreen() {
                 </View>
               ) : null}
             </Card>
-            </AnimatedSection>
+  )
+
+  return (
+    <View style={styles.flex}>
+      <ScreenHero
+        venueName={venue.name}
+        subtitle={formatPeriodNavigatorLabel(period, focusDate)}
+        stats={[
+          { numericValue: stats.pending, label: 'Pendientes' },
+          { numericValue: stats.confirmed, label: 'Confirmadas' },
+          {
+            numericValue: stats.occupancy,
+            suffix: '%',
+            label: 'Ocupación',
+            glow: true,
+          },
+        ]}
+      />
+
+      {desktop ? (
+        <View style={styles.toolbarWrap}>
+          <View style={styles.toolbar}>
+            <View style={styles.toolbarFilter}>{periodFilter}</View>
+            <View style={styles.toolbarNav}>{dateNavigator}</View>
+          </View>
+          <View style={styles.toolbarDivider}>
+            <PitchDivider />
+          </View>
+        </View>
+      ) : (
+        <>
+          {periodFilter}
+          {dateNavigator}
+        </>
+      )}
+
+      <Screen
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={() => {
+              setRefreshing(true)
+              void load().finally(() => setRefreshing(false))
+            }}
+            tintColor={colors.primary}
+          />
+        }
+      >
+        {feedback ? (
+          <FeedbackBanner message={feedback.message} type={feedback.type} />
+        ) : null}
+
+        {loading ? (
+          <ActivityIndicator color={colors.primary} style={styles.loader} />
+        ) : desktop ? (
+          <View style={styles.columnsDesktop}>
+            <View style={styles.colMain}>
+              <AnimatedSection index={0}>{pizarraCard}</AnimatedSection>
+              <AnimatedSection index={1}>{pendientesCard}</AnimatedSection>
+              <AnimatedSection index={2}>{ritmoCard}</AnimatedSection>
+            </View>
+            <View style={styles.colSide}>
+              <AnimatedSection index={0}>{tilesRow}</AnimatedSection>
+              <AnimatedSection index={1}>{informesCard}</AnimatedSection>
+              <AnimatedSection index={2}>{operacionCard}</AnimatedSection>
+            </View>
+          </View>
+        ) : (
+          <>
+            <AnimatedSection index={0}>{informesCard}</AnimatedSection>
+            <AnimatedSection index={1}>{pendientesCard}</AnimatedSection>
+            <AnimatedSection index={2}>{pizarraCard}</AnimatedSection>
+            <AnimatedSection index={3}>{tilesRow}</AnimatedSection>
+            <AnimatedSection index={4}>{ritmoCard}</AnimatedSection>
+            <AnimatedSection index={5}>{operacionCard}</AnimatedSection>
           </>
         )}
       </Screen>
@@ -851,6 +892,44 @@ export default function ResumenScreen() {
 const styles = StyleSheet.create({
   flex: { flex: 1, backgroundColor: colors.background },
   loader: { marginTop: spacing.xl },
+  toolbarWrap: {
+    backgroundColor: colors.surface,
+  },
+  toolbar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
+    maxWidth: layout.maxContentWidthWide,
+    alignSelf: 'center',
+  },
+  toolbarFilter: {
+    width: 380,
+  },
+  toolbarNav: {
+    flex: 1,
+    maxWidth: 480,
+  },
+  toolbarDivider: {
+    width: '100%',
+    maxWidth: layout.maxContentWidthWide,
+    alignSelf: 'center',
+    paddingHorizontal: spacing.lg,
+    paddingBottom: spacing.sm,
+  },
+  columnsDesktop: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: spacing.lg,
+  },
+  colMain: {
+    flex: 1.55,
+    minWidth: 0,
+  },
+  colSide: {
+    flex: 1,
+    minWidth: 0,
+  },
   cardHead: {
     flexDirection: 'row',
     alignItems: 'center',

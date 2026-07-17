@@ -13,15 +13,18 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Field } from '@/components/ui/Field'
+import { PitchDivider } from '@/components/ui/PitchDivider'
 import { pathForAuthRoute } from '@/lib/auth/navigation'
 import { useAuth } from '@/lib/auth/provider'
 import { useAuthRedirect } from '@/lib/auth/use-auth-redirect'
+import { useIsDesktopLayout } from '@/lib/layout'
 import { colors, layout, radii, spacing, typography } from '@/lib/theme'
 
 export default function LoginScreen() {
   const { signIn } = useAuth()
   const router = useRouter()
   const insets = useSafeAreaInsets()
+  const desktop = useIsDesktopLayout()
   useAuthRedirect('login')
 
   const [email, setEmail] = useState('')
@@ -50,6 +53,72 @@ export default function LoginScreen() {
     }
   }
 
+  const formCard = (
+    <Card elevated style={desktop ? styles.formCardDesktop : styles.formCard}>
+      <Text style={styles.formTitle}>Ingresar</Text>
+      <Text style={styles.formSub}>
+        Solo cuentas de centro deportivo autorizadas.
+      </Text>
+
+      <Field
+        label="Email"
+        value={email}
+        onChangeText={setEmail}
+        autoCapitalize="none"
+        keyboardType="email-address"
+        autoComplete="email"
+        placeholder="dueño@tucentro.cl"
+      />
+      <Field
+        label="Contraseña"
+        value={password}
+        onChangeText={setPassword}
+        secureTextEntry
+        autoComplete="password"
+      />
+
+      {error ? (
+        <View style={styles.errorBox}>
+          <Text style={styles.error}>{error}</Text>
+        </View>
+      ) : null}
+
+      <Button label="Ingresar" onPress={() => void handleLogin()} loading={loading} />
+    </Card>
+  )
+
+  if (desktop) {
+    return (
+      <View style={styles.splitFlex}>
+        <View style={styles.splitHero}>
+          <View style={styles.splitAtmosphere} pointerEvents="none">
+            <View style={styles.splitFloodlightA} />
+            <View style={styles.splitFloodlightB} />
+            <View style={styles.splitRing} />
+          </View>
+          <View style={styles.logoRow}>
+            <View style={styles.logoMark}>
+              <Ionicons name="football" size={22} color="#FFFFFF" />
+            </View>
+            <Text style={styles.brand}>Canchapp</Text>
+          </View>
+          <Text style={styles.splitTagline}>
+            El panel operativo para centros deportivos conectados a
+            Sportmatch.
+          </Text>
+          <View style={styles.splitDividerWrap}>
+            <PitchDivider tone="dark" />
+          </View>
+          <Text style={styles.splitFootnote}>
+            Reservas, horarios y confirmaciones de tu recinto, en un solo
+            lugar.
+          </Text>
+        </View>
+        <View style={styles.splitFormArea}>{formCard}</View>
+      </View>
+    )
+  }
+
   return (
     <KeyboardAvoidingView
       style={styles.flex}
@@ -67,39 +136,7 @@ export default function LoginScreen() {
         </Text>
       </View>
 
-      <View style={styles.formArea}>
-        <Card elevated style={styles.formCard}>
-          <Text style={styles.formTitle}>Ingresar</Text>
-          <Text style={styles.formSub}>
-            Solo cuentas de centro deportivo autorizadas.
-          </Text>
-
-          <Field
-            label="Email"
-            value={email}
-            onChangeText={setEmail}
-            autoCapitalize="none"
-            keyboardType="email-address"
-            autoComplete="email"
-            placeholder="dueño@tucentro.cl"
-          />
-          <Field
-            label="Contraseña"
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-            autoComplete="password"
-          />
-
-          {error ? (
-            <View style={styles.errorBox}>
-              <Text style={styles.error}>{error}</Text>
-            </View>
-          ) : null}
-
-          <Button label="Ingresar" onPress={() => void handleLogin()} loading={loading} />
-        </Card>
-      </View>
+      <View style={styles.formArea}>{formCard}</View>
     </KeyboardAvoidingView>
   )
 }
@@ -168,5 +205,83 @@ const styles = StyleSheet.create({
   error: {
     color: colors.danger,
     fontWeight: '600',
+  },
+  // Split-screen de escritorio
+  splitFlex: {
+    flex: 1,
+    flexDirection: 'row',
+    backgroundColor: colors.background,
+    minHeight: '100%',
+  },
+  splitHero: {
+    flex: 1,
+    maxWidth: 560,
+    backgroundColor: colors.pitchDeep,
+    paddingHorizontal: spacing.xxl,
+    justifyContent: 'center',
+    overflow: 'hidden',
+  },
+  splitAtmosphere: {
+    ...StyleSheet.absoluteFill,
+  },
+  splitFloodlightA: {
+    position: 'absolute',
+    top: -60,
+    left: -60,
+    width: 260,
+    height: 260,
+    borderRadius: 130,
+    backgroundColor: colors.floodlight,
+    opacity: 0.06,
+  },
+  splitFloodlightB: {
+    position: 'absolute',
+    bottom: -100,
+    right: -80,
+    width: 320,
+    height: 320,
+    borderRadius: 160,
+    backgroundColor: colors.floodlight,
+    opacity: 0.05,
+  },
+  splitRing: {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    width: 480,
+    height: 480,
+    marginLeft: -240,
+    marginTop: -240,
+    borderRadius: 240,
+    borderWidth: 1,
+    borderColor: colors.pitchRing,
+  },
+  splitTagline: {
+    ...typography.body,
+    fontSize: 17,
+    lineHeight: 26,
+    color: colors.onPitchMuted,
+    maxWidth: 360,
+    marginTop: spacing.sm,
+  },
+  splitDividerWrap: {
+    maxWidth: 280,
+    marginTop: spacing.xl,
+  },
+  splitFootnote: {
+    ...typography.eyebrow,
+    color: colors.onPitchMuted,
+    marginTop: spacing.lg,
+  },
+  splitFormArea: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: spacing.xl,
+  },
+  formCardDesktop: {
+    width: '100%',
+    maxWidth: layout.maxContentWidthNarrow,
+    marginBottom: 0,
   },
 })
