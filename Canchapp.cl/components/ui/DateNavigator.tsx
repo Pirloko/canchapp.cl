@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons'
-import { Pressable, StyleSheet, View } from 'react-native'
+import { Pressable, StyleSheet, Text, View } from 'react-native'
 import Animated, {
   FadeIn,
   FadeOut,
@@ -16,6 +16,10 @@ type DateNavigatorProps = {
   label: string
   onPrev: () => void
   onNext: () => void
+  /** Oculta la línea de mitad de cancha cuando el navegador vive dentro de una toolbar. */
+  showDivider?: boolean
+  /** Muestra un atajo "Hoy" para volver al día actual. Pasar solo cuando no se está en hoy. */
+  onToday?: () => void
 }
 
 function NavButton({
@@ -55,7 +59,13 @@ function NavButton({
   )
 }
 
-export function DateNavigator({ label, onPrev, onNext }: DateNavigatorProps) {
+export function DateNavigator({
+  label,
+  onPrev,
+  onNext,
+  showDivider = true,
+  onToday,
+}: DateNavigatorProps) {
   const compact = useIsCompactLayout()
 
   return (
@@ -71,11 +81,29 @@ export function DateNavigator({ label, onPrev, onNext }: DateNavigatorProps) {
         >
           {label}
         </Animated.Text>
+        {onToday ? (
+          <Animated.View entering={FadeIn.duration(280)} exiting={FadeOut.duration(180)}>
+            <Pressable
+              onPress={onToday}
+              accessibilityRole="button"
+              accessibilityLabel="Volver a hoy"
+              hitSlop={8}
+              style={({ pressed }) => [
+                styles.todayPill,
+                pressed && styles.todayPillPressed,
+              ]}
+            >
+              <Text style={styles.todayPillText}>Hoy</Text>
+            </Pressable>
+          </Animated.View>
+        ) : null}
         <NavButton icon="chevron-forward" onPress={onNext} />
       </View>
-      <View style={styles.dividerWrap}>
-        <PitchDivider />
-      </View>
+      {showDivider ? (
+        <View style={styles.dividerWrap}>
+          <PitchDivider />
+        </View>
+      ) : null}
     </View>
   )
 }
@@ -119,5 +147,21 @@ const styles = StyleSheet.create({
   labelCompact: {
     fontSize: 14,
     lineHeight: 18,
+  },
+  todayPill: {
+    paddingHorizontal: spacing.sm + 4,
+    paddingVertical: spacing.xs + 1,
+    borderRadius: radii.full,
+    borderWidth: 1,
+    borderColor: colors.primary,
+    marginRight: spacing.sm,
+  },
+  todayPillPressed: {
+    backgroundColor: colors.primaryLight,
+  },
+  todayPillText: {
+    ...typography.caption,
+    fontWeight: '700',
+    color: colors.primary,
   },
 })

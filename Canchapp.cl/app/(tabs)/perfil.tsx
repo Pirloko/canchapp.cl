@@ -9,6 +9,7 @@ import { Field } from '@/components/ui/Field'
 import { PitchDivider } from '@/components/ui/PitchDivider'
 import { Screen } from '@/components/ui/Screen'
 import { useAuth } from '@/lib/auth/provider'
+import { useIsDesktopLayout } from '@/lib/layout'
 import { updateSportsVenueNameAndPhone } from '@/lib/supabase/venue-owner-mutations'
 import { getSupabase } from '@/lib/supabase/client'
 import { colors, spacing, typography } from '@/lib/theme'
@@ -18,6 +19,7 @@ const SITE_URL =
 
 export default function PerfilScreen() {
   const { venue, user, signOut, updatePassword, refreshVenue } = useAuth()
+  const desktop = useIsDesktopLayout()
   const [name, setName] = useState('')
   const [phone, setPhone] = useState('')
   const [currentPassword, setCurrentPassword] = useState('')
@@ -90,64 +92,100 @@ export default function PerfilScreen() {
 
   if (!venue || !user) return null
 
+  const cuentaCard = (
+    <Card elevated>
+      <CardTitle>Cuenta</CardTitle>
+      <Text style={styles.line}>{user.email}</Text>
+    </Card>
+  )
+
+  const centroCard = (
+    <Card elevated>
+      <CardTitle>Centro deportivo</CardTitle>
+      <Field label="Nombre" value={name} onChangeText={setName} />
+      <Field
+        label="Teléfono contacto"
+        value={phone}
+        onChangeText={setPhone}
+        keyboardType="phone-pad"
+      />
+      <Button label="Guardar" onPress={() => void saveProfile()} loading={saving} />
+    </Card>
+  )
+
+  const fichaCard = (
+    <Card elevated>
+      <CardTitle>Ficha pública</CardTitle>
+      <CardSubtitle>
+        Los jugadores ven tu centro en Sportmatch. Comparte el link en redes o
+        cartelería.
+      </CardSubtitle>
+      <Button
+        label="Copiar link público"
+        variant="secondary"
+        onPress={() => void copyPublicLink()}
+        style={{ marginTop: spacing.sm }}
+      />
+    </Card>
+  )
+
+  const passwordCard = (
+    <Card elevated>
+      <CardTitle>Cambiar contraseña</CardTitle>
+      <Field
+        label="Contraseña actual"
+        value={currentPassword}
+        onChangeText={setCurrentPassword}
+        secureTextEntry
+      />
+      <Field
+        label="Nueva contraseña"
+        value={newPassword}
+        onChangeText={setNewPassword}
+        secureTextEntry
+      />
+      <Button label="Actualizar contraseña" onPress={() => void changePassword()} />
+    </Card>
+  )
+
   return (
     <Screen>
       {feedback ? (
         <FeedbackBanner message={feedback.message} type={feedback.type} />
       ) : null}
 
-      <Card elevated>
-        <CardTitle>Cuenta</CardTitle>
-        <Text style={styles.line}>{user.email}</Text>
-      </Card>
-
-      <Card elevated>
-        <CardTitle>Centro deportivo</CardTitle>
-        <Field label="Nombre" value={name} onChangeText={setName} />
-        <Field
-          label="Teléfono contacto"
-          value={phone}
-          onChangeText={setPhone}
-          keyboardType="phone-pad"
-        />
-        <Button label="Guardar" onPress={() => void saveProfile()} loading={saving} />
-      </Card>
-
-      <Card elevated>
-        <CardTitle>Ficha pública</CardTitle>
-        <CardSubtitle>
-          Los jugadores ven tu centro en Sportmatch. Comparte el link en redes o
-          cartelería.
-        </CardSubtitle>
-        <Button
-          label="Copiar link público"
-          variant="secondary"
-          onPress={() => void copyPublicLink()}
-          style={{ marginTop: spacing.sm }}
-        />
-      </Card>
-
-      <Card elevated>
-        <CardTitle>Cambiar contraseña</CardTitle>
-        <Field
-          label="Contraseña actual"
-          value={currentPassword}
-          onChangeText={setCurrentPassword}
-          secureTextEntry
-        />
-        <Field
-          label="Nueva contraseña"
-          value={newPassword}
-          onChangeText={setNewPassword}
-          secureTextEntry
-        />
-        <Button label="Actualizar contraseña" onPress={() => void changePassword()} />
-      </Card>
+      {desktop ? (
+        <View style={styles.columns}>
+          <View style={styles.col}>
+            {cuentaCard}
+            {centroCard}
+          </View>
+          <View style={styles.col}>
+            {fichaCard}
+            {passwordCard}
+          </View>
+        </View>
+      ) : (
+        <>
+          {cuentaCard}
+          {centroCard}
+          {fichaCard}
+          {passwordCard}
+        </>
+      )}
 
       <View style={styles.signOutDivider}>
         <PitchDivider />
       </View>
-      <Button label="Cerrar sesión" variant="danger" onPress={() => void signOut()} />
+      <View style={[desktop && styles.signOutRowDesktop]}>
+        <Button
+          label="Cerrar sesión"
+          variant="danger"
+          onPress={() => void signOut()}
+          fullWidth={!desktop}
+          style={desktop ? styles.signOutBtnDesktop : undefined}
+        />
+      </View>
       <Text style={styles.footer}>Canchapp · {SITE_URL}</Text>
     </Screen>
   )
@@ -155,7 +193,22 @@ export default function PerfilScreen() {
 
 const styles = StyleSheet.create({
   line: { ...typography.body, color: colors.text },
+  columns: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: spacing.lg,
+  },
+  col: {
+    flex: 1,
+    minWidth: 0,
+  },
   signOutDivider: { marginTop: spacing.sm, marginBottom: spacing.lg },
+  signOutRowDesktop: {
+    alignItems: 'flex-end',
+  },
+  signOutBtnDesktop: {
+    minWidth: 200,
+  },
   footer: {
     ...typography.scoreSm,
     textAlign: 'center',

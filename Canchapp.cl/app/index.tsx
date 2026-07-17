@@ -32,7 +32,7 @@ export default function IndexScreen() {
   if (route === 'login') return <Redirect href="/login" />
   if (route === 'denied') return <Redirect href="/denied" />
   if (route === 'onboarding') return <Redirect href="/onboarding" />
-  return <Redirect href="/(tabs)/reservas" />
+  return <Redirect href="/(tabs)/resumen" />
 }
 
 const styles = StyleSheet.create({

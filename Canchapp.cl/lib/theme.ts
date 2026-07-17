@@ -120,6 +120,10 @@ export const shadows = {
 
 export const layout = {
   maxContentWidth: 720,
+  /** Ancho de trabajo en pantallas de escritorio (panel de dos columnas). */
+  maxContentWidthWide: 1180,
+  /** Columna angosta para formularios (login/onboarding) — no estirar inputs en monitores anchos. */
+  maxContentWidthNarrow: 460,
   screenPadding: spacing.lg,
 }
 
