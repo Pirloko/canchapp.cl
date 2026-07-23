@@ -89,6 +89,12 @@ input {
   color: var(--text);
 }
 
+.brand__logo {
+  display: block;
+  height: 36px;
+  width: auto;
+}
+
 .brand__icon {
   width: 32px;
   height: 32px;
@@ -652,6 +658,24 @@ input {
 .site-footer__inner {
   display: grid;
   gap: 14px;
+}
+
+.site-footer__brand {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+  margin: 0;
+}
+
+.site-footer__brand img {
+  display: block;
+  height: 28px;
+  width: auto;
+}
+
+.site-footer__brand span {
+  color: #b9d9cc;
 }
 
 .site-footer strong {

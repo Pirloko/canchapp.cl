@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/Button'
 import { Card, CardSubtitle, CardTitle } from '@/components/ui/Card'
 import { FeedbackBanner } from '@/components/ui/FeedbackBanner'
 import { Field } from '@/components/ui/Field'
+import { Logo } from '@/components/ui/Logo'
 import { PitchDivider } from '@/components/ui/PitchDivider'
 import { Screen } from '@/components/ui/Screen'
 import { useAuth } from '@/lib/auth/provider'
@@ -186,7 +187,10 @@ export default function PerfilScreen() {
           style={desktop ? styles.signOutBtnDesktop : undefined}
         />
       </View>
-      <Text style={styles.footer}>Canchapp · {SITE_URL}</Text>
+      <View style={styles.footerBrand}>
+        <Logo variant="light" size="sm" withWordmark />
+        <Text style={styles.footer}>{SITE_URL}</Text>
+      </View>
     </Screen>
   )
 }
@@ -209,10 +213,14 @@ const styles = StyleSheet.create({
   signOutBtnDesktop: {
     minWidth: 200,
   },
+  footerBrand: {
+    alignItems: 'center',
+    gap: spacing.xs,
+    marginTop: spacing.lg,
+  },
   footer: {
     ...typography.scoreSm,
     textAlign: 'center',
     color: colors.textMuted,
-    marginTop: spacing.lg,
   },
 })

@@ -15,6 +15,10 @@ export default function Root({ children }: { children: ReactNode }) {
           name="viewport"
           content="width=device-width, initial-scale=1, shrink-to-fit=no, viewport-fit=cover"
         />
+        <link rel="icon" href="/brand/canchapp-logo-icon-solid.svg" type="image/svg+xml" />
+        <link rel="apple-touch-icon" href="/brand/canchapp-logo-icon.png" />
+        <meta name="theme-color" content="#064A35" />
+        <meta name="application-name" content="Canchapp" />
 
         {/*
           Disable body scrolling on web. This makes ScrollView components work closer to how they do on native.

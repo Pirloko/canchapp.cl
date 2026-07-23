@@ -1,4 +1,3 @@
-import { Ionicons } from '@expo/vector-icons'
 import { useRouter } from 'expo-router'
 import { useState } from 'react'
 import { StyleSheet, Text, View } from 'react-native'
@@ -7,13 +6,14 @@ import { Button } from '@/components/ui/Button'
 import { Card, CardSubtitle, CardTitle } from '@/components/ui/Card'
 import { FeedbackBanner } from '@/components/ui/FeedbackBanner'
 import { Field } from '@/components/ui/Field'
+import { Logo } from '@/components/ui/Logo'
 import { PitchDivider } from '@/components/ui/PitchDivider'
 import { Screen } from '@/components/ui/Screen'
 import { pathForAuthRoute } from '@/lib/auth/navigation'
 import { useAuth } from '@/lib/auth/provider'
 import { AuthGate } from '@/lib/auth/use-auth-redirect'
 import { useIsDesktopLayout } from '@/lib/layout'
-import { colors, layout, radii, spacing, typography } from '@/lib/theme'
+import { colors, layout, spacing, typography } from '@/lib/theme'
 
 export default function OnboardingScreen() {
   const { completeOnboarding, signOut } = useAuth()
@@ -58,9 +58,7 @@ export default function OnboardingScreen() {
 
   const intro = (
     <View style={desktop ? styles.introDesktop : styles.hero}>
-      <View style={styles.iconWrap}>
-        <Ionicons name="business-outline" size={28} color={colors.primary} />
-      </View>
+      <Logo variant="solid" size="lg" withWordmark style={styles.logo} />
       <Text style={[styles.title, desktop && styles.titleDesktop]}>
         Alta de centro
       </Text>
@@ -162,13 +160,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
     paddingTop: spacing.md,
   },
-  iconWrap: {
-    width: 56,
-    height: 56,
-    borderRadius: radii.lg,
-    backgroundColor: colors.primaryLight,
-    alignItems: 'center',
-    justifyContent: 'center',
+  logo: {
     marginBottom: spacing.md,
   },
   title: {

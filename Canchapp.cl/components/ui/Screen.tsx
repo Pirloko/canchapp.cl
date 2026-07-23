@@ -1,4 +1,3 @@
-import { Ionicons } from '@expo/vector-icons'
 import type { ReactNode } from 'react'
 import { useEffect } from 'react'
 import {
@@ -19,6 +18,7 @@ import Animated, {
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { AnimatedCounter } from '@/components/ui/AnimatedCounter'
+import { Logo } from '@/components/ui/Logo'
 import { PitchDivider } from '@/components/ui/PitchDivider'
 import { PulseGlow } from '@/components/ui/PulseGlow'
 import { useIsCompactLayout, useIsDesktopLayout } from '@/lib/layout'
@@ -129,8 +129,7 @@ export function ScreenHero({ venueName, subtitle, stats }: ScreenHeroProps) {
             ]}
           >
             <View style={styles.heroBadge}>
-              <Ionicons name="football" size={12} color={colors.onPitch} />
-              <Text style={styles.heroBadgeText}>Canchapp</Text>
+              <Logo variant="dark" size="sm" withWordmark />
             </View>
             {subtitle && !compact ? (
               <Text style={styles.heroClock} numberOfLines={1}>
@@ -321,11 +320,6 @@ const styles = StyleSheet.create({
   heroBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-  },
-  heroBadgeText: {
-    ...typography.eyebrow,
-    color: colors.onPitchMuted,
   },
   heroClock: {
     ...typography.scoreSm,

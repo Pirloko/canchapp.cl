@@ -1,4 +1,3 @@
-import { Ionicons } from '@expo/vector-icons'
 import { useRouter } from 'expo-router'
 import { useState } from 'react'
 import {
@@ -13,6 +12,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Field } from '@/components/ui/Field'
+import { Logo } from '@/components/ui/Logo'
 import { PitchDivider } from '@/components/ui/PitchDivider'
 import { pathForAuthRoute } from '@/lib/auth/navigation'
 import { useAuth } from '@/lib/auth/provider'
@@ -67,7 +67,6 @@ export default function LoginScreen() {
         autoCapitalize="none"
         keyboardType="email-address"
         autoComplete="email"
-        placeholder="dueño@tucentro.cl"
       />
       <Field
         label="Contraseña"
@@ -96,12 +95,7 @@ export default function LoginScreen() {
             <View style={styles.splitFloodlightB} />
             <View style={styles.splitRing} />
           </View>
-          <View style={styles.logoRow}>
-            <View style={styles.logoMark}>
-              <Ionicons name="football" size={22} color="#FFFFFF" />
-            </View>
-            <Text style={styles.brand}>Canchapp</Text>
-          </View>
+          <Logo variant="dark" size="lg" withWordmark style={styles.logoRow} />
           <Text style={styles.splitTagline}>
             El panel operativo para centros deportivos conectados a
             Sportmatch.
@@ -125,12 +119,7 @@ export default function LoginScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <View style={[styles.hero, { paddingTop: insets.top + spacing.lg }]}>
-        <View style={styles.logoRow}>
-          <View style={styles.logoMark}>
-            <Ionicons name="football" size={22} color="#FFFFFF" />
-          </View>
-          <Text style={styles.brand}>Canchapp</Text>
-        </View>
+        <Logo variant="dark" size="lg" withWordmark style={styles.logoRow} />
         <Text style={styles.tagline}>
           El panel operativo para centros deportivos conectados a Sportmatch.
         </Text>
@@ -151,23 +140,7 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: radii.xl + 8,
   },
   logoRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm + 4,
     marginBottom: spacing.md,
-  },
-  logoMark: {
-    width: 44,
-    height: 44,
-    borderRadius: radii.md,
-    backgroundColor: 'rgba(255,255,255,0.16)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  brand: {
-    ...typography.hero,
-    color: '#FFFFFF',
-    fontSize: 30,
   },
   tagline: {
     ...typography.body,
@@ -206,7 +179,6 @@ const styles = StyleSheet.create({
     color: colors.danger,
     fontWeight: '600',
   },
-  // Split-screen de escritorio
   splitFlex: {
     flex: 1,
     flexDirection: 'row',

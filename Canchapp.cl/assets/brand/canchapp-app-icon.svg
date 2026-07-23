@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" fill="none" role="img" aria-label="Canchapp">
+  <title>Canchapp</title>
+  <rect width="1024" height="1024" fill="#064A35"/>
+  <!-- Cancha centrada con margen generoso (~18% padding) -->
+  <rect x="256" y="320" width="512" height="384" rx="48" stroke="#FFFFFF" stroke-width="44" stroke-linecap="round" stroke-linejoin="round"/>
+  <line x1="512" y1="320" x2="512" y2="704" stroke="#FFFFFF" stroke-width="44" stroke-linecap="round"/>
+  <circle cx="512" cy="512" r="72" stroke="#FFFFFF" stroke-width="36"/>
+</svg>

@@ -2,6 +2,7 @@ import { Redirect } from 'expo-router'
 import { useEffect } from 'react'
 import { ActivityIndicator, Platform, StyleSheet, Text, View } from 'react-native'
 
+import { Logo } from '@/components/ui/Logo'
 import { useAuth } from '@/lib/auth/provider'
 import { isSupabaseConfigured } from '@/lib/supabase/client'
 import { colors, spacing } from '@/lib/theme'
@@ -16,6 +17,7 @@ function LandingWeb() {
 
   return (
     <View style={styles.center}>
+      <Logo variant="solid" size="lg" style={styles.logo} />
       <ActivityIndicator size="large" color={colors.primary} />
     </View>
   )
@@ -27,7 +29,7 @@ export default function IndexScreen() {
   if (!isSupabaseConfigured()) {
     return (
       <View style={styles.center}>
-        <Text style={styles.title}>Canchapp</Text>
+        <Logo variant="light" size="lg" withWordmark style={styles.logo} />
         <Text style={styles.msg}>
           Configura EXPO_PUBLIC_SUPABASE_URL y EXPO_PUBLIC_SUPABASE_ANON_KEY en
           .env
@@ -39,6 +41,7 @@ export default function IndexScreen() {
   if (loading) {
     return (
       <View style={styles.center}>
+        <Logo variant="solid" size="lg" style={styles.logo} />
         <ActivityIndicator size="large" color={colors.primary} />
         <Text style={styles.loading}>Cargando…</Text>
       </View>
@@ -48,7 +51,7 @@ export default function IndexScreen() {
   if (route === 'login') return <LandingWeb />
   if (route === 'denied') return <Redirect href="/denied" />
   if (route === 'onboarding') return <Redirect href="/onboarding" />
-  return <Redirect href="/(tabs)/resumen" />
+  return <Redirect href="/(tabs)/reservas" />
 }
 
 const styles = StyleSheet.create({
@@ -59,10 +62,7 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
     backgroundColor: colors.background,
   },
-  title: {
-    fontSize: 28,
-    fontWeight: '800',
-    color: colors.primary,
+  logo: {
     marginBottom: spacing.md,
   },
   msg: {
