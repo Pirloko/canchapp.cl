@@ -46,8 +46,8 @@ insert into venue_weekly_hours (venue_id, day_of_week, open_time, close_time) va
   ('74f1018d-b7e3-4894-b157-8625fef6873e', 6, '09:00', '23:00');
 
 -- 2) Crear las 2 canchas de pádel (idempotente: solo si no existen ya por nombre)
-insert into venue_courts (venue_id, name, sort_order, price_per_hour)
-select '74f1018d-b7e3-4894-b157-8625fef6873e', v.name, v.sort_order, v.price
+insert into venue_courts (venue_id, name, sort_order, price_per_hour, sport_id)
+select '74f1018d-b7e3-4894-b157-8625fef6873e', v.name, v.sort_order, v.price, 'padel'
 from (values
   ('Cancha Pádel 1', 2, 22000),
   ('Cancha Pádel 2', 3, 22000)
@@ -57,6 +57,14 @@ where not exists (
   where vc.venue_id = '74f1018d-b7e3-4894-b157-8625fef6873e'
     and vc.name = v.name
 );
+
+-- 2b) Corregir sport_id de las canchas de pádel si ya se habían creado antes
+-- de este ajuste (quedaban con el default 'football').
+update venue_courts
+set sport_id = 'padel'
+where venue_id = '74f1018d-b7e3-4894-b157-8625fef6873e'
+  and name like 'Cancha Pádel%'
+  and sport_id is distinct from 'padel';
 
 -- 3) Limpiar reservas previas de TODAS las canchas del centro demo
 delete from venue_reservations

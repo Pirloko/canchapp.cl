@@ -68,7 +68,7 @@ export async function fetchVenueCourts(
 ): Promise<VenueCourt[]> {
   const { data, error } = await supabase
     .from('venue_courts')
-    .select('id, venue_id, name, sort_order, price_per_hour')
+    .select('id, venue_id, name, sort_order, price_per_hour, sport_id')
     .eq('venue_id', venueId)
     .order('sort_order', { ascending: true })
     .order('name', { ascending: true })
@@ -80,6 +80,7 @@ export async function fetchVenueCourts(
     sortOrder: (r.sort_order as number) ?? 0,
     pricePerHour:
       r.price_per_hour != null ? (r.price_per_hour as number) : null,
+    sportId: (r.sport_id as string) ?? 'football',
   }))
 }
 

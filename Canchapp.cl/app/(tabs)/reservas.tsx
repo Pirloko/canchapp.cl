@@ -9,6 +9,7 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   View,
 } from 'react-native'
 import Animated, { FadeInDown } from 'react-native-reanimated'
@@ -24,7 +25,7 @@ import { PitchDivider } from '@/components/ui/PitchDivider'
 import { Screen } from '@/components/ui/Screen'
 import { StatusBadge } from '@/components/ui/StatusBadge'
 import { useAuth } from '@/lib/auth/provider'
-import { reservationRevenue } from '@/lib/dashboard/stats'
+import { dayWindow, reservationRevenue } from '@/lib/dashboard/stats'
 import { useVenueReservationsRealtime } from '@/lib/hooks/use-venue-reservations-realtime'
 import { useIsDesktopLayout } from '@/lib/layout'
 import { formatCLP } from '@/lib/money'
@@ -38,12 +39,19 @@ import {
 import {
   fetchVenueCourts,
   fetchVenueReservationsRange,
+  fetchVenueWeeklyHours,
 } from '@/lib/supabase/venue-queries'
-import { whatsappUrlForPhone } from '@/lib/venue-phone'
+import { sportLabel } from '@/lib/venue-sports'
+import {
+  formatVenuePhoneChileDisplay,
+  whatsappUrlForPhone,
+} from '@/lib/venue-phone'
 import {
   formatDateLine,
+  formatMinutes,
   formatTime,
   formatTimeRange,
+  minutesOfDay,
   toDateInputValue,
 } from '@/lib/venue-slots'
 import {
@@ -54,7 +62,11 @@ import {
   statusColors,
   typography,
 } from '@/lib/theme'
-import type { VenueCourt, VenueReservationRow } from '@/lib/types'
+import type {
+  VenueCourt,
+  VenueReservationRow,
+  VenueWeeklyHour,
+} from '@/lib/types'
 
 type ManualInfo = {
   isManual: boolean
@@ -86,6 +98,7 @@ export default function ReservasScreen() {
   const desktop = useIsDesktopLayout()
   const [dayStr, setDayStr] = useState(() => toDateInputValue(new Date()))
   const [courts, setCourts] = useState<VenueCourt[]>([])
+  const [weeklyHours, setWeeklyHours] = useState<VenueWeeklyHour[]>([])
   const [reservations, setReservations] = useState<VenueReservationRow[]>([])
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
@@ -101,9 +114,9 @@ export default function ReservasScreen() {
   const [manualOpen, setManualOpen] = useState(false)
   const [manualSaving, setManualSaving] = useState(false)
   const [manualForm, setManualForm] = useState({
+    sportId: '',
     courtId: '',
-    time: '18:00',
-    durationMinutes: '60',
+    slotStart: null as number | null,
     clientName: '',
     clientPhone: '',
     note: '',
@@ -119,8 +132,12 @@ export default function ReservasScreen() {
   const load = useCallback(async () => {
     if (!venue) return
     const supabase = getSupabase()
-    const courtRows = await fetchVenueCourts(supabase, venue.id)
+    const [courtRows, hours] = await Promise.all([
+      fetchVenueCourts(supabase, venue.id),
+      fetchVenueWeeklyHours(supabase, venue.id),
+    ])
     setCourts(courtRows)
+    setWeeklyHours(hours)
     const from = new Date(`${dayStr}T00:00:00`)
     const to = new Date(from)
     to.setDate(to.getDate() + 1)
@@ -151,6 +168,39 @@ export default function ReservasScreen() {
     return m
   }, [courts])
 
+  const sportIds = useMemo(() => {
+    const seen = new Set<string>()
+    const order: string[] = []
+    for (const c of courts) {
+      if (!seen.has(c.sportId)) {
+        seen.add(c.sportId)
+        order.push(c.sportId)
+      }
+    }
+    return order
+  }, [courts])
+
+  const courtsForSport = useMemo(
+    () =>
+      manualForm.sportId
+        ? courts.filter((c) => c.sportId === manualForm.sportId)
+        : courts,
+    [courts, manualForm.sportId]
+  )
+
+  const modalDayWindow = useMemo(
+    () => dayWindow(weeklyHours, new Date(`${dayStr}T12:00:00`)),
+    [weeklyHours, dayStr]
+  )
+
+  const slotOptions = useMemo(() => {
+    const step = venue?.slotDurationMinutes || 60
+    const { open, close } = modalDayWindow
+    const slots: number[] = []
+    for (let m = open; m + step <= close; m += step) slots.push(m)
+    return slots
+  }, [modalDayWindow, venue])
+
   const dayRows = useMemo(
     () =>
       [...reservations].sort(
@@ -169,6 +219,24 @@ export default function ReservasScreen() {
       revenue,
     }
   }, [dayRows, courts])
+
+  const bookedRanges = useMemo(() => {
+    if (!manualForm.courtId) return []
+    return dayRows
+      .filter(
+        (r) => r.courtId === manualForm.courtId && r.status !== 'cancelled'
+      )
+      .map((r) => ({
+        start: minutesOfDay(r.startsAt),
+        end: minutesOfDay(r.endsAt),
+      }))
+  }, [dayRows, manualForm.courtId])
+
+  const isSlotBooked = (start: number) => {
+    const step = venue?.slotDurationMinutes || 60
+    const end = start + step
+    return bookedRanges.some((b) => b.start < end && b.end > start)
+  }
 
   const shiftDay = (delta: number) => {
     const d = new Date(`${dayStr}T12:00:00`)
@@ -268,26 +336,55 @@ export default function ReservasScreen() {
     if (url) void Linking.openURL(url)
   }
 
+  const openManualModal = () => {
+    setManualForm({
+      sportId: '',
+      courtId: '',
+      slotStart: null,
+      clientName: '',
+      clientPhone: '',
+      note: '',
+      status: 'pending',
+    })
+    setManualOpen(true)
+  }
+
+  const selectSport = (sportId: string) => {
+    setManualForm((f) => ({ ...f, sportId, courtId: '', slotStart: null }))
+  }
+
+  const selectCourt = (courtId: string) => {
+    setManualForm((f) => ({ ...f, courtId, slotStart: null }))
+  }
+
   const createManual = async () => {
     if (!venue || !manualForm.courtId) {
       showFeedback('error', 'Selecciona una cancha.')
       return
     }
-    const startsAt = new Date(`${dayStr}T${manualForm.time}:00`)
-    const duration = Number(manualForm.durationMinutes) || 60
-    const endsAt = new Date(startsAt.getTime() + duration * 60_000)
-    if (Number.isNaN(startsAt.getTime())) {
-      showFeedback('error', 'Hora inválida.')
+    if (manualForm.slotStart == null) {
+      showFeedback('error', 'Selecciona un horario.')
       return
     }
+    let clientPhone = ''
+    if (manualForm.clientPhone) {
+      if (manualForm.clientPhone.length !== 8) {
+        showFeedback('error', 'Ingresa los 8 dígitos del celular.')
+        return
+      }
+      clientPhone = formatVenuePhoneChileDisplay(`+569${manualForm.clientPhone}`)
+    }
+    const startsAt = new Date(`${dayStr}T00:00:00`)
+    startsAt.setMinutes(manualForm.slotStart)
+    const endsAt = new Date(
+      startsAt.getTime() + venue.slotDurationMinutes * 60_000
+    )
     setManualSaving(true)
     try {
       const notes = [
         'manual_reservation',
         manualForm.clientName.trim() ? `cliente:${manualForm.clientName.trim()}` : '',
-        manualForm.clientPhone.trim()
-          ? `telefono:${manualForm.clientPhone.trim()}`
-          : '',
+        clientPhone ? `telefono:${clientPhone}` : '',
         manualForm.note.trim() ? `nota:${manualForm.note.trim()}` : '',
       ]
         .filter(Boolean)
@@ -517,7 +614,7 @@ export default function ReservasScreen() {
               label="Nueva reserva"
               size="sm"
               fullWidth={false}
-              onPress={() => setManualOpen(true)}
+              onPress={openManualModal}
             />
           </View>
           <View style={styles.toolbarDivider}>
@@ -558,7 +655,7 @@ export default function ReservasScreen() {
             ) : null}
             <Button
               label="Nueva reserva manual"
-              onPress={() => setManualOpen(true)}
+              onPress={openManualModal}
               style={styles.newBtnMobile}
             />
           </>
@@ -620,59 +717,117 @@ export default function ReservasScreen() {
             <ScrollView showsVerticalScrollIndicator={false}>
             <CardTitle>Reserva manual</CardTitle>
             <Text style={styles.modalSub}>Se creará para el {dayLabel}.</Text>
-            <Text style={styles.pickLabel}>Cancha</Text>
+            <Text style={styles.pickLabel}>1. Deporte</Text>
             {courts.length === 0 ? (
               <Text style={styles.note}>
                 Agrega canchas en la pestaña Canchas para poder reservar.
               </Text>
             ) : (
               <View style={styles.courtPickRow}>
-                {courts.map((c) => (
+                {sportIds.map((sportId) => (
                   <Pressable
-                    key={c.id}
-                    onPress={() =>
-                      setManualForm((f) => ({ ...f, courtId: c.id }))
-                    }
+                    key={sportId}
+                    onPress={() => selectSport(sportId)}
                     accessibilityRole="button"
                     accessibilityState={{
-                      selected: manualForm.courtId === c.id,
+                      selected: manualForm.sportId === sportId,
                     }}
                     style={[
                       styles.courtPick,
-                      manualForm.courtId === c.id && styles.courtPickOn,
+                      manualForm.sportId === sportId && styles.courtPickOn,
                     ]}
                   >
                     <Text
                       style={[
                         styles.courtPickText,
-                        manualForm.courtId === c.id && styles.courtPickTextOn,
+                        manualForm.sportId === sportId &&
+                          styles.courtPickTextOn,
                       ]}
                     >
-                      {c.name}
+                      {sportLabel(sportId)}
                     </Text>
                   </Pressable>
                 ))}
               </View>
             )}
-            <View style={styles.fieldRow}>
-              <View style={styles.fieldHalf}>
-                <Field
-                  label="Hora (HH:MM)"
-                  value={manualForm.time}
-                  onChangeText={(time) => setManualForm((f) => ({ ...f, time }))}
-                />
-              </View>
-              <View style={styles.fieldHalf}>
-                <Field
-                  label="Duración (min)"
-                  value={manualForm.durationMinutes}
-                  onChangeText={(durationMinutes) =>
-                    setManualForm((f) => ({ ...f, durationMinutes }))
-                  }
-                  keyboardType="number-pad"
-                />
-              </View>
-            </View>
+            {manualForm.sportId ? (
+              <>
+                <Text style={styles.pickLabel}>2. Cancha</Text>
+                <View style={styles.courtPickRow}>
+                  {courtsForSport.map((c) => (
+                    <Pressable
+                      key={c.id}
+                      onPress={() => selectCourt(c.id)}
+                      accessibilityRole="button"
+                      accessibilityState={{
+                        selected: manualForm.courtId === c.id,
+                      }}
+                      style={[
+                        styles.courtPick,
+                        manualForm.courtId === c.id && styles.courtPickOn,
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.courtPickText,
+                          manualForm.courtId === c.id &&
+                            styles.courtPickTextOn,
+                        ]}
+                      >
+                        {c.name}
+                      </Text>
+                    </Pressable>
+                  ))}
+                </View>
+              </>
+            ) : null}
+            {manualForm.courtId ? (
+              <>
+                <Text style={styles.pickLabel}>
+                  3. Horario ({venue.slotDurationMinutes} min · una reserva
+                  por tramo)
+                </Text>
+                {slotOptions.length === 0 ? (
+                  <Text style={styles.note}>
+                    El centro no tiene horario configurado para este día.
+                  </Text>
+                ) : (
+                  <View style={styles.slotGrid}>
+                    {slotOptions.map((start) => {
+                      const booked = isSlotBooked(start)
+                      const selected = manualForm.slotStart === start
+                      return (
+                        <Pressable
+                          key={start}
+                          disabled={booked}
+                          onPress={() =>
+                            setManualForm((f) => ({ ...f, slotStart: start }))
+                          }
+                          accessibilityRole="button"
+                          accessibilityState={{ selected, disabled: booked }}
+                          accessibilityLabel={`${formatMinutes(start)}${booked ? ', no disponible' : ''}`}
+                          style={[
+                            styles.slotPick,
+                            selected && styles.slotPickOn,
+                            booked && styles.slotPickDisabled,
+                          ]}
+                        >
+                          <Text
+                            style={[
+                              styles.slotPickText,
+                              selected && styles.slotPickTextOn,
+                              booked && styles.slotPickTextDisabled,
+                            ]}
+                          >
+                            {formatMinutes(start)}
+                          </Text>
+                        </Pressable>
+                      )
+                    })}
+                  </View>
+                )}
+              </>
+            ) : null}
             <Field
               label="Nombre cliente"
               value={manualForm.clientName}
@@ -680,14 +835,29 @@ export default function ReservasScreen() {
                 setManualForm((f) => ({ ...f, clientName }))
               }
             />
-            <Field
-              label="Teléfono cliente"
-              value={manualForm.clientPhone}
-              onChangeText={(clientPhone) =>
-                setManualForm((f) => ({ ...f, clientPhone }))
-              }
-              hint="Con código de país para contactar por WhatsApp, ej. +56 9…"
-            />
+            <Text style={styles.pickLabel}>Teléfono cliente</Text>
+            <View style={styles.phoneRow}>
+              <View style={styles.phonePrefix}>
+                <Text style={styles.phonePrefixText}>🇨🇱 +56 9</Text>
+              </View>
+              <TextInput
+                value={manualForm.clientPhone}
+                onChangeText={(v) =>
+                  setManualForm((f) => ({
+                    ...f,
+                    clientPhone: v.replace(/\D/g, '').slice(0, 8),
+                  }))
+                }
+                keyboardType="number-pad"
+                maxLength={8}
+                placeholder="1234 5678"
+                placeholderTextColor={colors.textMuted}
+                style={styles.phoneInput}
+              />
+            </View>
+            <Text style={styles.phoneHint}>
+              8 dígitos del celular, sin el 9 inicial.
+            </Text>
             <Field
               label="Nota"
               value={manualForm.note}
@@ -927,12 +1097,71 @@ const styles = StyleSheet.create({
   },
   courtPickText: { ...typography.body, color: colors.text },
   courtPickTextOn: { fontWeight: '600', color: colors.primaryDark },
-  fieldRow: {
+  slotGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+    marginBottom: spacing.md,
+  },
+  slotPick: {
+    minWidth: 64,
+    alignItems: 'center',
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    borderWidth: 1.5,
+    borderColor: colors.border,
+    borderRadius: radii.md,
+  },
+  slotPickOn: {
+    borderColor: colors.primary,
+    backgroundColor: colors.primaryLight,
+  },
+  slotPickDisabled: {
+    borderColor: colors.borderLight,
+    backgroundColor: colors.borderLight,
+    opacity: 0.6,
+  },
+  slotPickText: { ...typography.body, color: colors.text },
+  slotPickTextOn: { fontWeight: '600', color: colors.primaryDark },
+  slotPickTextDisabled: {
+    color: colors.textMuted,
+    textDecorationLine: 'line-through',
+  },
+  phoneRow: {
     flexDirection: 'row',
     gap: spacing.sm,
+    marginBottom: spacing.xs + 2,
   },
-  fieldHalf: {
+  phonePrefix: {
+    justifyContent: 'center',
+    paddingHorizontal: spacing.md,
+    borderWidth: 1.5,
+    borderColor: colors.border,
+    borderRadius: radii.md,
+    backgroundColor: colors.borderLight,
+  },
+  phonePrefixText: {
+    ...typography.body,
+    color: colors.text,
+    fontWeight: '600',
+  },
+  phoneInput: {
     flex: 1,
+    borderWidth: 1.5,
+    borderColor: colors.border,
+    borderRadius: radii.md,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm + 4,
+    fontSize: 16,
+    color: colors.text,
+    backgroundColor: colors.surface,
+    minHeight: 48,
+  },
+  phoneHint: {
+    ...typography.caption,
+    color: colors.textMuted,
+    marginTop: -spacing.xs,
+    marginBottom: spacing.md,
   },
   row: { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.md },
   half: { flex: 1 },

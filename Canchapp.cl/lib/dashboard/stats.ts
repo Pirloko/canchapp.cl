@@ -45,6 +45,41 @@ export function reservationRevenue(
   return price * ((r.endsAt.getTime() - r.startsAt.getTime()) / 3_600_000)
 }
 
+/** Ocupación (0-100) de una cancha específica, agregada sobre un set de días (un día para vista semanal, una semana para vista mensual). */
+export function courtBucketOccupancy(
+  rows: VenueReservationRow[],
+  courtId: string,
+  weeklyHours: VenueWeeklyHour[],
+  dayKeys: string[]
+): number {
+  let reservedMin = 0
+  let capacityMin = 0
+  for (const key of dayKeys) {
+    const day = new Date(`${key}T12:00:00`)
+    const window = dayWindow(weeklyHours, day)
+    capacityMin += Math.max(window.close - window.open, 1)
+    const dayRows = rows.filter(
+      (r) =>
+        r.courtId === courtId &&
+        r.status !== 'cancelled' &&
+        toDateInputValue(r.startsAt) === key
+    )
+    for (const r of dayRows) {
+      const startRaw = minutesOfDay(r.startsAt)
+      const endRaw = minutesOfDay(r.endsAt)
+      const start = Math.max(startRaw, window.open)
+      const end = Math.min(
+        endRaw <= startRaw ? window.close : endRaw,
+        window.close
+      )
+      if (end > start) reservedMin += end - start
+    }
+  }
+  return capacityMin > 0
+    ? Math.min(Math.round((reservedMin / capacityMin) * 100), 100)
+    : 0
+}
+
 export function computeDashboardStats(
   rows: VenueReservationRow[],
   courts: VenueCourt[],

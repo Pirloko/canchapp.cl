@@ -20,6 +20,10 @@ import { DateNavigator } from '@/components/ui/DateNavigator'
 import { FeedbackBanner } from '@/components/ui/FeedbackBanner'
 import { FloatingIcon } from '@/components/ui/FloatingIcon'
 import { OccupancyBoard } from '@/components/ui/OccupancyBoard'
+import {
+  OccupancyHeatmap,
+  type OccupancyBucket,
+} from '@/components/ui/OccupancyHeatmap'
 import { PendingCountChip } from '@/components/ui/PendingCountChip'
 import { PeriodFilter } from '@/components/ui/PeriodFilter'
 import { PitchDivider } from '@/components/ui/PitchDivider'
@@ -47,6 +51,7 @@ import {
 } from '@/lib/dashboard/period'
 import {
   computeDashboardStats,
+  courtBucketOccupancy,
   dayWindow,
   reservationRevenue,
 } from '@/lib/dashboard/stats'
@@ -217,6 +222,35 @@ export default function ResumenScreen() {
     const day = new Date(`${focusDayKey}T12:00:00`)
     return dayWindow(weeklyHours, day)
   }, [weeklyHours, focusDayKey])
+
+  const pizarraBuckets = useMemo<OccupancyBucket[]>(() => {
+    if (period === 'week') {
+      return periodRange.dayKeys.map((key) => {
+        const d = new Date(`${key}T12:00:00`)
+        return { key, label: WEEKDAY_SHORT_ES[d.getDay()] }
+      })
+    }
+    if (period === 'month') {
+      return monthWeekBuckets(periodRange.dayKeys).map((keys, index) => ({
+        key: keys[0],
+        label: `S${index + 1}`,
+      }))
+    }
+    return []
+  }, [period, periodRange.dayKeys])
+
+  const pizarraBucketDayKeys = useMemo(() => {
+    if (period === 'month') return monthWeekBuckets(periodRange.dayKeys)
+    return periodRange.dayKeys.map((key) => [key])
+  }, [period, periodRange.dayKeys])
+
+  const pizarraOccupancyFor = useMemo(() => {
+    return (courtId: string, bucketKey: string) => {
+      const idx = pizarraBuckets.findIndex((b) => b.key === bucketKey)
+      const dayKeys = idx >= 0 ? pizarraBucketDayKeys[idx] : []
+      return courtBucketOccupancy(periodRows, courtId, weeklyHours, dayKeys)
+    }
+  }, [pizarraBuckets, pizarraBucketDayKeys, periodRows, weeklyHours])
 
   const stats = useMemo(
     () =>
@@ -606,19 +640,31 @@ export default function ResumenScreen() {
             </Card>
   )
 
+  const pizarraTitle =
+    period === 'week'
+      ? 'Pizarra semanal'
+      : period === 'month'
+        ? 'Pizarra mensual'
+        : isFocusToday
+          ? 'Pizarra de hoy'
+          : `Pizarra · ${focusDayLabel}`
+
+  const pizarraSubtitle =
+    courts.length === 0
+      ? 'Agrega canchas para ver la ocupación.'
+      : period === 'week'
+        ? 'Ocupación por cancha en cada día de la semana.'
+        : period === 'month'
+          ? 'Ocupación por cancha en cada semana del mes.'
+          : focusDayRows.length === 0
+            ? 'Sin reservas este día — la pizarra está libre.'
+            : 'Toca un bloque para ver el detalle.'
+
   const pizarraCard = (
             <Card>
-              <CardTitle>
-                {isFocusToday ? 'Pizarra de hoy' : `Pizarra · ${focusDayLabel}`}
-              </CardTitle>
-              <CardSubtitle>
-                {courts.length === 0
-                  ? 'Agrega canchas para ver la ocupación del día.'
-                  : focusDayRows.length === 0
-                    ? 'Sin reservas este día — la pizarra está libre.'
-                    : 'Toca un bloque para ver el detalle.'}
-              </CardSubtitle>
-              {courts.length > 0 ? (
+              <CardTitle>{pizarraTitle}</CardTitle>
+              <CardSubtitle>{pizarraSubtitle}</CardSubtitle>
+              {courts.length > 0 && period === 'day' ? (
                 <OccupancyBoard
                   courts={courts}
                   reservations={focusDayRows}
@@ -631,7 +677,14 @@ export default function ResumenScreen() {
                   }
                 />
               ) : null}
-              {selectedBlock ? (
+              {courts.length > 0 && period !== 'day' ? (
+                <OccupancyHeatmap
+                  courts={courts}
+                  buckets={pizarraBuckets}
+                  valueFor={pizarraOccupancyFor}
+                />
+              ) : null}
+              {period === 'day' && selectedBlock ? (
                 <Animated.View
                   entering={FadeInDown.duration(280)}
                   style={styles.blockDetail}

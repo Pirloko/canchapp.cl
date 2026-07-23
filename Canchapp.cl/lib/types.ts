@@ -27,6 +27,7 @@ export interface VenueCourt {
   name: string
   sortOrder: number
   pricePerHour?: number | null
+  sportId: string
 }
 
 export interface VenueWeeklyHour {
